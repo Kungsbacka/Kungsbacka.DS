@@ -465,12 +465,12 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("extensionAttribute9")]
+        [DirectoryProperty("carLicense")]
         public string ResourceManagerTasks
         {
             get
             {
-                object[] values = ExtensionGet("extensionAttribute9");
+                object[] values = ExtensionGet("carLicense");
                 if (values.Length != 1)
                 {
                     return null;
@@ -479,7 +479,7 @@ namespace Kungsbacka.DS
             }
             set
             {
-                ExtensionSet("extensionAttribute9", value);
+                ExtensionSet("carLicense", value);
             }
         }
 
