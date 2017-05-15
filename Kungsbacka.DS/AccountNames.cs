@@ -175,6 +175,11 @@ namespace Kungsbacka.DS
             }
         }
 
+        public void ClearSuffixCache()
+        {
+            suffixCache.Clear();
+        }
+
         public int GetNextAvailableSuffix(string key)
         {
             return GetNextAvailableSuffix(key, -1);
