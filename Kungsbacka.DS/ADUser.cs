@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace Kungsbacka.DS
 {
@@ -17,6 +21,7 @@ namespace Kungsbacka.DS
     public class ADUser : UserPrincipal
     {
         bool objectCategoryChanged;
+        PropertyValueCollection allowedAttributesEffective;
 
         public ADUser(PrincipalContext context) : base(context) { }
 
@@ -35,6 +40,54 @@ namespace Kungsbacka.DS
                 throw new InvalidOperationException("Cannot save object when property ObjectCategory has changed.");
             }
             base.Save();
+        }
+
+        public bool CanWriteAttibute(string attribute)
+        {
+            if (allowedAttributesEffective == null)
+            {
+                DirectoryEntry de = (DirectoryEntry)GetUnderlyingObject();
+                de.RefreshCache(new string[] { "allowedAttributesEffective" });
+                allowedAttributesEffective = de.Properties["allowedAttributesEffective"];
+            }
+            return allowedAttributesEffective.Contains(attribute);
+        }
+
+        // This assumes a lot about the environment:
+        // - Most attributes that we are interested in are readable by normal users
+        // - Permission to read a confidential attributes is assigned to groups only
+        public bool CanReadAttribute(string attribute)
+        {
+            if (Schema.IsAttributeConfidential(attribute))
+            {
+                // Domain Admin?
+                using (var currentUser = DSFactory.FindUserBySid(WindowsIdentity.GetCurrent().User))
+                {
+                    var domainAdminsSid = new SecurityIdentifier(WellKnownSidType.AccountDomainAdminsSid, currentUser.Sid.AccountDomainSid);
+                    if (currentUser.IsMemberOf(currentUser.Context, IdentityType.Sid, domainAdminsSid.Value))
+                    {
+                        return true;
+                    }
+                }
+                // Member of a group that grants access?
+                var userSchemaGuid = Schema.GetClassSchemaGuid("user");
+                var attributeSchemaGuid = Schema.GetAttributeSchemaGuid(attribute);
+                var groups = WindowsIdentity.GetCurrent().Groups;
+                var de = (DirectoryEntry)GetUnderlyingObject();
+                var acl = de.ObjectSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
+                foreach (ActiveDirectoryAccessRule ace in acl)
+                {
+                    if (ace.ActiveDirectoryRights == ActiveDirectoryRights.ExtendedRight && ace.ObjectType == attributeSchemaGuid && ace.InheritedObjectType == userSchemaGuid)
+                    {
+                        if (groups.Contains(ace.IdentityReference))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            return true;
         }
 
         public new void Delete()

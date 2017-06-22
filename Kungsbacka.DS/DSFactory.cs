@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
-using System.DirectoryServices.ActiveDirectory;
+using System.Security.Principal;
 
 namespace Kungsbacka.DS
 {
@@ -21,8 +21,6 @@ namespace Kungsbacka.DS
     public static class DSFactory
     {
         static PrincipalContext principalContext;
-        static string personClassDistinguishedName;
-
 
         public static PrincipalContext DefaultContext
         {
@@ -34,18 +32,6 @@ namespace Kungsbacka.DS
                 }
                 return principalContext;
             }
-        }
-
-        static string GetPersonClassDistinguishedName()
-        {
-            if (personClassDistinguishedName == null)
-            {
-                var schema = ActiveDirectorySchema.GetCurrentSchema();
-                var personClass = schema.FindClass("Person");
-                var directoryEntry = personClass.GetDirectoryEntry();
-                personClassDistinguishedName = directoryEntry.Properties["distinguishedName"][0] as string;
-            }
-            return personClassDistinguishedName;
         }
 
         public static PrincipalContext CreatePrincipalContext()
@@ -68,7 +54,7 @@ namespace Kungsbacka.DS
             using (ADUser qbePrincipal = new ADUser(DefaultContext))
             {
                 // Filter out unwanted objects like computers
-                qbePrincipal.ObjectCategory = GetPersonClassDistinguishedName();
+                qbePrincipal.ObjectCategory = Schema.GetSchemaClassDistinguishedName("person");
                 switch (attribute)
                 {
                     case SearchProperty.AmbiguousNameResolution:
@@ -114,6 +100,11 @@ namespace Kungsbacka.DS
         public static ADUser FindUserBySamAccountName(string samAccountName)
         { 
             return ADUser.FindByIdentity(DefaultContext, IdentityType.SamAccountName, samAccountName);
+        }
+
+        public static ADUser FindUserBySid(SecurityIdentifier sid)
+        {
+            return ADUser.FindByIdentity(DefaultContext, IdentityType.Sid, sid.Value);
         }
 
         public static GroupPrincipal FindGroupByDistinguishedName(string distinguishedName)

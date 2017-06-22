@@ -51,6 +51,7 @@
     <Compile Include="PasswordGenerator.cs" />
     <Compile Include="PasswordValidator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Schema.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj">
