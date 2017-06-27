@@ -54,7 +54,7 @@ namespace Kungsbacka.DS
             using (ADUser qbePrincipal = new ADUser(DefaultContext))
             {
                 // Filter out unwanted objects like computers
-                qbePrincipal.ObjectCategory = Schema.GetSchemaClassDistinguishedName("person");
+                qbePrincipal.ObjectCategory = ADSchema.GetSchemaClassDistinguishedName("person");
                 switch (attribute)
                 {
                     case SearchProperty.AmbiguousNameResolution:

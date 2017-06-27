@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.Security.AccessControl;
 using System.Security.Principal;
 
 namespace Kungsbacka.DS
@@ -53,39 +50,43 @@ namespace Kungsbacka.DS
             return allowedAttributesEffective.Contains(attribute);
         }
 
-        // This assumes a lot about the environment:
+        // This assumes a few things about the environment:
         // - Most attributes that we are interested in are readable by normal users
-        // - Permission to read a confidential attributes is assigned to groups only
+        // - Permission to read a confidential attribute is assigned to groups only
         public bool CanReadAttribute(string attribute)
         {
-            if (Schema.IsAttributeConfidential(attribute))
+            if (ADSchema.IsAttributeConfidential(attribute))
             {
-                // Domain Admin?
-                using (var currentUser = DSFactory.FindUserBySid(WindowsIdentity.GetCurrent().User))
+                using (var windowsIdentity = WindowsIdentity.GetCurrent())
                 {
-                    var domainAdminsSid = new SecurityIdentifier(WellKnownSidType.AccountDomainAdminsSid, currentUser.Sid.AccountDomainSid);
-                    if (currentUser.IsMemberOf(currentUser.Context, IdentityType.Sid, domainAdminsSid.Value))
+                    // Domain Admin?
+                    using (var currentUser = DSFactory.FindUserBySid(windowsIdentity.User))
                     {
-                        return true;
-                    }
-                }
-                // Member of a group that grants access?
-                var userSchemaGuid = Schema.GetClassSchemaGuid("user");
-                var attributeSchemaGuid = Schema.GetAttributeSchemaGuid(attribute);
-                var groups = WindowsIdentity.GetCurrent().Groups;
-                var de = (DirectoryEntry)GetUnderlyingObject();
-                var acl = de.ObjectSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
-                foreach (ActiveDirectoryAccessRule ace in acl)
-                {
-                    if (ace.ActiveDirectoryRights == ActiveDirectoryRights.ExtendedRight && ace.ObjectType == attributeSchemaGuid && ace.InheritedObjectType == userSchemaGuid)
-                    {
-                        if (groups.Contains(ace.IdentityReference))
+                        var domainAdminsSid = new SecurityIdentifier(WellKnownSidType.AccountDomainAdminsSid, currentUser.Sid.AccountDomainSid);
+                        if (currentUser.IsMemberOf(currentUser.Context, IdentityType.Sid, domainAdminsSid.Value))
                         {
                             return true;
                         }
                     }
+                    // Member of a group that grants access?
+                    var userSchemaGuid = ADSchema.GetClassSchemaGuid("user");
+                    var attributeSchemaGuid = ADSchema.GetAttributeSchemaGuid(attribute);
+                    var groups = windowsIdentity.Groups;
+                    var de = (DirectoryEntry)GetUnderlyingObject();
+                    var acl = de.ObjectSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
+                    // Check ADS_RIGHT_DS_CONTROL_ACCESS where object type is the attribute being checked and inherited object type is user.
+                    foreach (ActiveDirectoryAccessRule ace in acl)
+                    {
+                        if (ace.ActiveDirectoryRights == ActiveDirectoryRights.ExtendedRight && ace.ObjectType == attributeSchemaGuid && ace.InheritedObjectType == userSchemaGuid)
+                        {
+                            if (groups.Contains(ace.IdentityReference))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
                 }
-                return false;
             }
             return true;
         }

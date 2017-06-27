@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.DirectoryServices.ActiveDirectory;
-using System.DirectoryServices;
 
 namespace Kungsbacka.DS
 {
-    public static class Schema
+    public static class ADSchema
     {
 
 
