@@ -404,20 +404,20 @@ namespace Kungsbacka.DS
                     cnSuffix = GetNextAvailableSuffix(cnWithoutDiacritics, max);
                     samSuffix = GetNextAvailableSuffix(sam, max);
                 }
+                CacheSuffix(upn, upnSuffix);
+                CacheSuffix(cnWithoutDiacritics, upnSuffix);
+                CacheSuffix(sam, upnSuffix);
                 if (upnSuffix > -1)
                 {
                     if (initialUpnSuffix > 1)
                     {
                         upn += upnSuffix;
-                        CacheSuffix(upn, upnSuffix);
                     }
                     if (initialCnSuffix > -1)
                     {
                         cn += upnSuffix;
-                        CacheSuffix(cnWithoutDiacritics, upnSuffix);
                     }
                     sam += upnSuffix;
-                    CacheSuffix(sam, upnSuffix);
                 }
                 accountNames = new AccountNames(
                     GetName(firstName),

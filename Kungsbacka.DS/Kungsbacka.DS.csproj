@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AccountNames.cs" />
     <Compile Include="ADGroup.cs" />
+    <Compile Include="ADSecurity.cs" />
     <Compile Include="ADUser.cs" />
     <Compile Include="DSFactory.cs" />
     <Compile Include="PasswordGenerator.cs" />

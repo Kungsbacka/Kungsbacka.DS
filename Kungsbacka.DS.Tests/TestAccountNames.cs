@@ -141,5 +141,15 @@ namespace Kungsbacka.DS.UnitTests
             Assert.AreEqual(names.SamAccountName, "uninam");
             Assert.AreEqual(names.CommonName, "Unique Name");
         }
+
+        [TestMethod]
+        public void TestGetAccountNames5()
+        {
+            var an = new AccountNamesFactory();
+            var names1 = an.GetNames("Unique", "Name", "example.com", "199001010101");
+            var names2 = an.GetNames("Unique", "Name", "example.com", "199001010101");
+            Assert.AreNotEqual(names1.SamAccountName, names2.SamAccountName);
+        }
+
     }
 }

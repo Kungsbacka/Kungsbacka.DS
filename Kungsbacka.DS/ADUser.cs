@@ -144,7 +144,7 @@ namespace Kungsbacka.DS
             get
             {
                 object[] values = ExtensionGet("msRTCSIP-UserEnabled");
-                if (values.Length != 1 || null == values[0])
+                if (values.Length != 1 || values[0] == null)
                 {
                     return false;
                 }
