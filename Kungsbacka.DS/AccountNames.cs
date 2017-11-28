@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static System.FormattableString;
+using System.Globalization;
 using Kungsbacka.CommonExtensions;
 
 namespace Kungsbacka.DS
@@ -79,11 +81,11 @@ namespace Kungsbacka.DS
             DisplayName = displayName;
         }
     }
-
     public class AccountNamesFactory
     {
         readonly Dictionary<string, List<int>> suffixCache;
-        
+        static CultureInfo swedishCulture = CultureInfo.GetCultureInfo("sv-SE");
+
         public AccountNamesFactory()
         {
             suffixCache = new Dictionary<string, List<int>>();
@@ -115,7 +117,7 @@ namespace Kungsbacka.DS
                     str
                         .Trim()
                         .RemoveDiacritic()
-                        .ToLower()
+                        .ToLower(swedishCulture)
                         .Replace('ø', 'o')
                         .Replace('æ', 'a'),
                     "[^a-z]", "");
@@ -142,7 +144,7 @@ namespace Kungsbacka.DS
                         .Trim()
                         .RemoveDiacritic()
                         .RemoveRepeating(new char[] { ' ', '-'})
-                        .ToLower()
+                        .ToLower(swedishCulture)
                         .Replace('ø', 'o')
                         .Replace('æ', 'a')
                         .Replace(' ', '-'),
@@ -299,7 +301,7 @@ namespace Kungsbacka.DS
                 if (!suffixCache.ContainsKey(sam))
                 {
 
-                    foreach (ADUser user in DSFactory.SearchUser(SearchProperty.SamAccountName, $"{sam}*"))
+                    foreach (ADUser user in DSFactory.SearchUser(SearchProperty.SamAccountName, Invariant($"{sam}*")))
                     {
                         string foundSam = user.SamAccountName;
                         string foundSamNoSuffix = foundSam.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
@@ -313,7 +315,7 @@ namespace Kungsbacka.DS
             }
             if (!suffixCache.ContainsKey(upn))
             {
-                foreach(ADUser user in DSFactory.SearchUser(SearchProperty.UserPrincipalName, $"{upn}*@{upnDomain}"))
+                foreach(ADUser user in DSFactory.SearchUser(SearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
                 {
                     string foundUpn = user.UserPrincipalName.Split('@')[0];
                     string foundUpnNoSuffix = foundUpn.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
@@ -323,7 +325,7 @@ namespace Kungsbacka.DS
                     }
                     user.Dispose();
                 }
-                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.ProxyAddresses, $"SMTP:{upn}*@{upnDomain}"))
+                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.ProxyAddresses, Invariant($"SMTP:{upn}*@{upnDomain}")))
                 {
                     foreach (string address in user.ProxyAddresses)
                     {
@@ -345,7 +347,7 @@ namespace Kungsbacka.DS
             }
             if (!suffixCache.ContainsKey(cnWithoutDiacritics))
             {
-                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.CommonName, $"{cn}*"))
+                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.CommonName, Invariant($"{cn}*")))
                 {
                     // You can not have two accounts with common names that only differ by diactitics.
                     // AD considers the common names "Anders Öst" and "Anders Ost" as equal. That is why
@@ -389,7 +391,7 @@ namespace Kungsbacka.DS
                     GetName(firstName),
                     GetName(lastName),
                     string.Empty,
-                    $"{upn}@{upnDomain}",
+                    Invariant($"{upn}@{upnDomain}"),
                     cn,
                     GetDisplayName(firstName, lastName)
                 );
@@ -423,7 +425,7 @@ namespace Kungsbacka.DS
                     GetName(firstName),
                     GetName(lastName),
                     sam,
-                    $"{upn}@{upnDomain}",
+                    Invariant($"{upn}@{upnDomain}"),
                     cn,
                     GetDisplayName(firstName, lastName)
                 );
