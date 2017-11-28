@@ -58,6 +58,7 @@
     <Compile Include="TestADUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestAccountNames.cs" />
+    <Compile Include="TestADGroup.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kungsbacka.DS\Kungsbacka.DS.csproj">

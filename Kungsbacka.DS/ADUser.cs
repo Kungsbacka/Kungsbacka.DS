@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Security.Principal;
+using System.Linq;
 
 namespace Kungsbacka.DS
 {
@@ -102,6 +105,28 @@ namespace Kungsbacka.DS
         public new string ToString()
         {
             return DistinguishedName;
+        }
+
+        public ReadOnlyCollection<string> GetManagedGroups()
+        {
+            var groups = new HashSet<string>();
+            using (var searchRoot = new DirectoryEntry("LDAP://DC=kba,DC=local"))
+            using (var searcher = new DirectorySearcher(searchRoot, "(&(objectCategory=group)(managedBy=*))", new string[] { "managedBy", "distinguishedName" }))
+            {
+                foreach (SearchResult result in searcher.FindAll())
+                {
+                    string managedBy = (string)result.Properties["managedBy"][0];
+                    string filter = $"(&(member:1.2.840.113556.1.4.1941:={DistinguishedName})(distinguishedName={managedBy}))";
+                    using (var searcher2 = new DirectorySearcher(searchRoot, filter))
+                    {
+                        if (searcher2.FindOne() != null)
+                        {
+                            groups.Add((string)result.Properties["distinguishedName"][0]);
+                        }
+                    }
+                }
+            }
+            return new ReadOnlyCollection<string>(groups.ToList());
         }
 
         public new DateTime? AccountExpirationDate

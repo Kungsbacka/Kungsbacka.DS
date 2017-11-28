@@ -107,9 +107,9 @@ namespace Kungsbacka.DS
             return ADUser.FindByIdentity(DefaultContext, IdentityType.Sid, sid.Value);
         }
 
-        public static GroupPrincipal FindGroupByDistinguishedName(string distinguishedName)
+        public static ADGroup FindGroupByDistinguishedName(string distinguishedName)
         {
-            return GroupPrincipal.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
+            return ADGroup.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
         }
     }
 }
