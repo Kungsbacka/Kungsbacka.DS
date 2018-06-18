@@ -20,7 +20,7 @@ namespace Kungsbacka.DS
 
     public static class DSFactory
     {
-        static PrincipalContext principalContext;
+        private static PrincipalContext principalContext;
 
         public static PrincipalContext DefaultContext
         {
@@ -34,19 +34,14 @@ namespace Kungsbacka.DS
             }
         }
 
-        public static PrincipalContext CreatePrincipalContext()
-        {
-            return new PrincipalContext(ContextType.Domain);
-        }
-        public static PrincipalContext CreatePrincipalContext(string container)
-        {
-            return new PrincipalContext(ContextType.Domain, null, container);
-        }
+        public static PrincipalContext CreatePrincipalContext() =>
+            new PrincipalContext(ContextType.Domain);
 
-        public static PrincipalContext CreatePrincipalContext(string userName, string password)
-        {
-            return new PrincipalContext(ContextType.Domain, null, userName, password);
-        }
+        public static PrincipalContext CreatePrincipalContext(string container) =>
+            new PrincipalContext(ContextType.Domain, null, container);
+
+        public static PrincipalContext CreatePrincipalContext(string userName, string password) =>
+            new PrincipalContext(ContextType.Domain, null, userName, password);
 
         public static IList<ADUser> SearchUser(SearchProperty attribute, string value)
         {
@@ -92,24 +87,16 @@ namespace Kungsbacka.DS
             return list;
         }
 
-        public static ADUser FindUserByDistinguishedName(string distinguishedName)
-        {
-            return ADUser.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
-        }
+        public static ADUser FindUserByDistinguishedName(string distinguishedName) =>
+            ADUser.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
 
-        public static ADUser FindUserBySamAccountName(string samAccountName)
-        { 
-            return ADUser.FindByIdentity(DefaultContext, IdentityType.SamAccountName, samAccountName);
-        }
+        public static ADUser FindUserBySamAccountName(string samAccountName) =>
+            ADUser.FindByIdentity(DefaultContext, IdentityType.SamAccountName, samAccountName);
 
-        public static ADUser FindUserBySid(SecurityIdentifier sid)
-        {
-            return ADUser.FindByIdentity(DefaultContext, IdentityType.Sid, sid.Value);
-        }
+        public static ADUser FindUserBySid(SecurityIdentifier sid) => 
+            ADUser.FindByIdentity(DefaultContext, IdentityType.Sid, sid.Value);
 
-        public static ADGroup FindGroupByDistinguishedName(string distinguishedName)
-        {
-            return ADGroup.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
-        }
+        public static ADGroup FindGroupByDistinguishedName(string distinguishedName) =>
+            ADGroup.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
     }
 }

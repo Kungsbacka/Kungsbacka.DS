@@ -332,6 +332,24 @@ namespace Kungsbacka.DS
             }
         }
 
+        [DirectoryProperty("employeeType")]
+        public string HiddenMobilePhone
+        {
+            get
+            {
+                object[] values = ExtensionGet("employeeType");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set
+            {
+                ExtensionSet("employeeType", value);
+            }
+        }
+
         [DirectoryProperty("initials")]
         public string Initials
         {
