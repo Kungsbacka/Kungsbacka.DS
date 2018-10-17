@@ -6,7 +6,7 @@ using System.Security.Principal;
 
 namespace Kungsbacka.DS
 {
-    public enum SearchProperty
+    public enum UserSearchProperty
     {
         SamAccountName,
         UserPrincipalName,
@@ -16,6 +16,12 @@ namespace Kungsbacka.DS
         AmbiguousNameResolution,
         EmployeeNumber,
         SeeAlso
+    }
+
+    public enum GroupSearchProperty
+    {
+        DisplayName,
+        Location
     }
 
     public static class DSFactory
@@ -43,41 +49,41 @@ namespace Kungsbacka.DS
         public static PrincipalContext CreatePrincipalContext(string userName, string password) =>
             new PrincipalContext(ContextType.Domain, null, userName, password);
 
-        public static IList<ADUser> SearchUser(SearchProperty attribute, string value)
+        public static IList<ADUser> SearchUser(UserSearchProperty searchProperty, string searchString)
         {
             var list = new List<ADUser>();
             using (ADUser qbePrincipal = new ADUser(DefaultContext))
             {
                 // Filter out unwanted objects like computers
                 qbePrincipal.ObjectCategory = ADSchema.GetSchemaClassDistinguishedName("person");
-                switch (attribute)
+                switch (searchProperty)
                 {
-                    case SearchProperty.AmbiguousNameResolution:
-                        qbePrincipal.AmbiguousNameResolution = value;
+                    case UserSearchProperty.AmbiguousNameResolution:
+                        qbePrincipal.AmbiguousNameResolution = searchString;
                         break;
-                    case SearchProperty.CommonName:
-                        qbePrincipal.Name = value;
+                    case UserSearchProperty.CommonName:
+                        qbePrincipal.Name = searchString;
                         break;
-                    case SearchProperty.EmailAddress:
-                        qbePrincipal.EmailAddress = value;
+                    case UserSearchProperty.EmailAddress:
+                        qbePrincipal.EmailAddress = searchString;
                         break;
-                    case SearchProperty.ProxyAddresses:
-                        qbePrincipal.ProxyAddresses = new string[] { value };
+                    case UserSearchProperty.ProxyAddresses:
+                        qbePrincipal.ProxyAddresses = new string[] { searchString };
                         break;
-                    case SearchProperty.SamAccountName:
-                        qbePrincipal.SamAccountName = value;
+                    case UserSearchProperty.SamAccountName:
+                        qbePrincipal.SamAccountName = searchString;
                         break;
-                    case SearchProperty.UserPrincipalName:
-                        qbePrincipal.UserPrincipalName = value;
+                    case UserSearchProperty.UserPrincipalName:
+                        qbePrincipal.UserPrincipalName = searchString;
                         break;
-                    case SearchProperty.EmployeeNumber:
-                        qbePrincipal.EmployeeNumber = value;
+                    case UserSearchProperty.EmployeeNumber:
+                        qbePrincipal.EmployeeNumber = searchString;
                         break;
-                    case SearchProperty.SeeAlso:
-                        qbePrincipal.SeeAlso = value;
+                    case UserSearchProperty.SeeAlso:
+                        qbePrincipal.SeeAlso = searchString;
                         break;
                     default:
-                        throw new NotImplementedException(attribute.ToString());
+                        throw new NotImplementedException(searchProperty.ToString());
                 }
                 using (var principalSearcher = new PrincipalSearcher(qbePrincipal))
                 {
@@ -86,6 +92,53 @@ namespace Kungsbacka.DS
             }
             return list;
         }
+
+        public static IList<ADGroup> SearchGroup(GroupSearchProperty searchProperty, string searchString)
+        {
+            var list = new List<ADGroup>();
+            using (ADGroup qbeGroup = new ADGroup(DefaultContext))
+            {
+                switch (searchProperty)
+                {
+                    case GroupSearchProperty.DisplayName:
+                        qbeGroup.DisplayName = searchString;
+                        break;
+                    case GroupSearchProperty.Location:
+                        qbeGroup.Location = searchString;
+                        break;
+                    default:
+                        throw new NotImplementedException(searchProperty.ToString());
+                }
+                using (var principalSearcher = new PrincipalSearcher(qbeGroup))
+                {
+                    list.AddRange(principalSearcher.FindAll().Cast<ADGroup>());
+                }
+            }
+            return list;
+        }
+
+        private static ADLicenseGroup LicenseGroupFromADGroup(ADGroup adGroup)
+        {
+            string json = adGroup.Location.Substring(8);
+            var jsonSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            var licenseGroup = jsonSerializer.Deserialize<ADLicenseGroup>(json);
+            licenseGroup.Guid = (Guid)adGroup.Guid;
+            licenseGroup.DistinguishedName = adGroup.DistinguishedName;
+            licenseGroup.DisplayName = adGroup.DisplayName;
+            return licenseGroup;
+        }
+
+        public static IList<ADLicenseGroup> GetLicenseGroups(bool standardOnly)
+        {
+            var searchResult = SearchGroup(GroupSearchProperty.Location, "license:*");
+            if (standardOnly)
+            {
+                return searchResult.Select(g => LicenseGroupFromADGroup(g)).Where(g => g.Standard && !g.Dynamic).ToList();
+            }
+            return searchResult.Select(g => LicenseGroupFromADGroup(g)).Where(g => !g.Dynamic).ToList();
+        }
+
+        public static IList<ADLicenseGroup> GetLicenseGroups() => GetLicenseGroups(false);
 
         public static ADUser FindUserByDistinguishedName(string distinguishedName) =>
             ADUser.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);

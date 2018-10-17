@@ -27,7 +27,7 @@ namespace Kungsbacka.DS.UnitTests
             IList<ADUser> result = null;
             try
             {
-                result = DSFactory.SearchUser(SearchProperty.SamAccountName, "Administrator");
+                result = DSFactory.SearchUser(UserSearchProperty.SamAccountName, "Administrator");
                 count = result.Count;
                 userName = result[0].SamAccountName;
             }

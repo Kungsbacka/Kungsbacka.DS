@@ -301,7 +301,7 @@ namespace Kungsbacka.DS
                 if (!suffixCache.ContainsKey(sam))
                 {
 
-                    foreach (ADUser user in DSFactory.SearchUser(SearchProperty.SamAccountName, Invariant($"{sam}*")))
+                    foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.SamAccountName, Invariant($"{sam}*")))
                     {
                         string foundSam = user.SamAccountName;
                         string foundSamNoSuffix = foundSam.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
@@ -315,7 +315,7 @@ namespace Kungsbacka.DS
             }
             if (!suffixCache.ContainsKey(upn))
             {
-                foreach(ADUser user in DSFactory.SearchUser(SearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
+                foreach(ADUser user in DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
                 {
                     string foundUpn = user.UserPrincipalName.Split('@')[0];
                     string foundUpnNoSuffix = foundUpn.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
@@ -325,7 +325,7 @@ namespace Kungsbacka.DS
                     }
                     user.Dispose();
                 }
-                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.ProxyAddresses, Invariant($"SMTP:{upn}*@{upnDomain}")))
+                foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.ProxyAddresses, Invariant($"SMTP:{upn}*@{upnDomain}")))
                 {
                     foreach (string address in user.ProxyAddresses)
                     {
@@ -347,7 +347,7 @@ namespace Kungsbacka.DS
             }
             if (!suffixCache.ContainsKey(cnWithoutDiacritics))
             {
-                foreach (ADUser user in DSFactory.SearchUser(SearchProperty.CommonName, Invariant($"{cn}*")))
+                foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.CommonName, Invariant($"{cn}*")))
                 {
                     // You can not have two accounts with common names that only differ by diactitics.
                     // AD considers the common names "Anders Öst" and "Anders Ost" as equal. That is why

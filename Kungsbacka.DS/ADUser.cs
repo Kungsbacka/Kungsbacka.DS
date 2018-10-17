@@ -177,6 +177,14 @@ namespace Kungsbacka.DS
             }
         }
 
+        public bool AccountIsQuarantined
+        {
+            get
+            {
+                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         public new DateTime? AccountLockoutTime
         {
             get
@@ -220,23 +228,7 @@ namespace Kungsbacka.DS
             }
             set
             {
-                switch (value)
-                {
-                    case "personal":
-                    case "personal-fg":
-                    case "personal-gv":
-                    case "personal-ex":
-                    case "elev-gv":
-                    case "elev-fg":
-                    case "elev-ex":
-                    case "mailbox":
-                    case "extern":
-                    case "leverantör":
-                        ExtensionSet("extensionAttribute15", value);
-                        break;
-                    default:
-                        throw new ArgumentException("Unknown account type");
-                }
+                ExtensionSet("extensionAttribute15", value);
             }
         }
 
@@ -505,6 +497,24 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("physicalDeliveryOfficeName", value);
+            }
+        }
+
+        [DirectoryProperty("msDS-cloudExtensionAttribute2")]
+        public string OriginalLocation
+        {
+            get
+            {
+                object[] values = ExtensionGet("msDS-cloudExtensionAttribute2");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set
+            {
+                ExtensionSet("msDS-cloudExtensionAttribute2", value);
             }
         }
 

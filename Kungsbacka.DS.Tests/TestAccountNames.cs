@@ -106,11 +106,11 @@ namespace Kungsbacka.DS.UnitTests
         {
             var an = new AccountNamesFactory();
             var names = an.GetNames("Unique", "Name", "example.com", "199700000000");
-            var list = DSFactory.SearchUser(SearchProperty.SamAccountName, names.SamAccountName);
+            var list = DSFactory.SearchUser(UserSearchProperty.SamAccountName, names.SamAccountName);
             Assert.AreEqual(0, list.Count);
-            list = DSFactory.SearchUser(SearchProperty.UserPrincipalName, names.UserPrincipalName);
+            list = DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, names.UserPrincipalName);
             Assert.AreEqual(0, list.Count);
-            list = DSFactory.SearchUser(SearchProperty.CommonName, names.CommonName);
+            list = DSFactory.SearchUser(UserSearchProperty.CommonName, names.CommonName);
             Assert.AreEqual(0, list.Count);
         }
 

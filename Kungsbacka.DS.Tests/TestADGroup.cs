@@ -9,7 +9,6 @@ namespace Kungsbacka.DS.UnitTests
         [TestMethod]
         public void TestSetManagerCanUpdateMembership()
         {
-
         }
     }
 }

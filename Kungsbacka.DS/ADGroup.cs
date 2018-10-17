@@ -13,8 +13,6 @@ namespace Kungsbacka.DS
     {
         static readonly Guid memberAttributeGuid = new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2");
 
-        bool ea15IsParsed;
-        string groupSource;
         SecurityIdentifier managedBySid;
 
         public ADGroup(PrincipalContext context) : base(context) { }
@@ -29,36 +27,21 @@ namespace Kungsbacka.DS
             return DistinguishedName;
         }
 
-        void ParseEa15()
-        {
-            if (!ea15IsParsed)
-            {
-                var rawValue = ExtensionGet("extensionAttribute15");
-                if (rawValue.Length > 0)
-                {
-                    var value = rawValue[0] as string;
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        var parts = value.Split(';');
-                        var source = parts.FirstOrDefault(s => s.StartsWith("source=", StringComparison.OrdinalIgnoreCase));
-                        if (!string.IsNullOrEmpty(source))
-                        {
-                            parts = source.Split('=');
-                            groupSource = parts[1];
-                        }
-                    }
-                }
-                ea15IsParsed = true;
-            }
-        }
-
-        [DirectoryProperty("extensionAttribute15")]
-        public string GroupSource
+        [DirectoryProperty("Location")]
+        public string Location
         {
             get
             {
-                ParseEa15();
-                return groupSource;
+                object[] values = ExtensionGet("location");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set
+            {
+                ExtensionSet("location", value);
             }
         }
 
@@ -77,6 +60,27 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("managedBy", value);
+            }
+        }
+
+        [DirectoryProperty("extensionAttribute11")]
+        public bool Synchronized
+        {
+            get
+            {
+                object[] values = ExtensionGet("extensionAttribute11");
+                return values.Length > 0 && null != values[0];
+            }
+            set
+            {
+                if (value)
+                {
+                    ExtensionSet("extensionAttribute11", "SYNC_ME");
+                }
+                else
+                {
+                    ExtensionSet("extensionAttribute11", null);
+                }
             }
         }
 
