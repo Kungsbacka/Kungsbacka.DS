@@ -214,12 +214,12 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("extensionAttribute15")]
+        [DirectoryProperty("msDS-cloudExtensionAttribute15")]
         public string AccountType
         {
             get
             {
-                object[] values = ExtensionGet("extensionAttribute15");
+                object[] values = ExtensionGet("msDS-cloudExtensionAttribute15");
                 if (values.Length != 1)
                 {
                     return null;
@@ -228,7 +228,7 @@ namespace Kungsbacka.DS
             }
             set
             {
-                ExtensionSet("extensionAttribute15", value);
+                ExtensionSet("msDS-cloudExtensionAttribute15", value);
             }
         }
 
@@ -590,12 +590,12 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("extensionAttribute14")]
+        [DirectoryProperty("msDS-cloudExtensionAttribute14")]
         public string SamlId
         {
             get
             {
-                object[] values = ExtensionGet("extensionAttribute14");
+                object[] values = ExtensionGet("msDS-cloudExtensionAttribute14");
                 if (values.Length != 1)
                 {
                     return null;
@@ -604,25 +604,7 @@ namespace Kungsbacka.DS
             }
             set
             {
-                ExtensionSet("extensionAttribute14", value);
-            }
-        }
-
-        [DirectoryProperty("extensionAttribute13")]
-        public string SchoolUnitCode
-        {
-            get
-            {
-                object[] values = ExtensionGet("extensionAttribute13");
-                if (values.Length != 1)
-                {
-                    return null;
-                }
-                return (string)values[0];
-            }
-            set
-            {
-                ExtensionSet("extensionAttribute13", value);
+                ExtensionSet("msDS-cloudExtensionAttribute14", value);
             }
         }
 
@@ -655,7 +637,7 @@ namespace Kungsbacka.DS
             get
             {
                 object[] values = ExtensionGet("extensionAttribute11");
-                return values.Length > 0 && null != values[0];
+                return values.Length > 0 && values[0] != null;
             }
             set
             {

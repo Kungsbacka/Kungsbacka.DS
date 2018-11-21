@@ -27,7 +27,7 @@ namespace Kungsbacka.DS
             return DistinguishedName;
         }
 
-        [DirectoryProperty("Location")]
+        [DirectoryProperty("location")]
         public string Location
         {
             get
@@ -69,7 +69,7 @@ namespace Kungsbacka.DS
             get
             {
                 object[] values = ExtensionGet("extensionAttribute11");
-                return values.Length > 0 && null != values[0];
+                return values.Length > 0 && values[0] != null;
             }
             set
             {
