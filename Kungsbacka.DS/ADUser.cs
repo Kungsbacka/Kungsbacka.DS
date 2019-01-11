@@ -20,8 +20,41 @@ namespace Kungsbacka.DS
     [DirectoryObjectClass("user")]
     public class ADUser : UserPrincipal
     {
-        bool objectCategoryChanged;
-        PropertyValueCollection allowedAttributesEffective;
+        private const long REMOTE_USER_MAILBOX = -2147483648;
+        private const long CLOUD_PROVISIONED_MAILBOX = 1;
+        private const long MIGRATED_MAILBOX = 4;
+
+        private bool objectCategoryChanged;
+        private PropertyValueCollection allowedAttributesEffective;
+
+        private bool TryGetSingleValuedString(string propertyName, out string value)
+        {
+            value = null;
+            object[] values = ExtensionGet(propertyName);
+            if (values.Length == 1)
+            {
+                value = values[0] as string;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TryGetLargeInteger(string propertyName, out long value)
+        {
+            value = 0;
+            object[] values = ExtensionGet(propertyName);
+            if (values.Length == 1)
+            {
+                var largeInt = values[0] as ActiveDs.IADsLargeInteger;
+                if (largeInt != null)
+                {
+                    value = largeInt.LowPart;
+                    var y = largeInt.HighPart;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public ADUser(PrincipalContext context) : base(context) { }
 
@@ -141,50 +174,6 @@ namespace Kungsbacka.DS
             }
         }
 
-        public bool AccountHasExpired
-        {
-            get
-            {
-                if (AccountExpirationDate == null)
-                {
-                    return false;
-                }
-                return AccountExpirationDate < DateTime.Now;
-            }
-        }
-
-        [DirectoryProperty("homeMDB")]
-        [DirectoryProperty("mailNickname")]
-        public bool AccountIsMailEnabled
-        {
-            get
-            {
-                return ExtensionGet("homeMDB").Length == 1 && ExtensionGet("mailNickname").Length == 1;
-            }
-        }
-
-        [DirectoryProperty("msRTCSIP-UserEnabled")]
-        public bool AccountIsSipEnabled
-        {
-            get
-            {
-                object[] values = ExtensionGet("msRTCSIP-UserEnabled");
-                if (values.Length != 1 || values[0] == null)
-                {
-                    return false;
-                }
-                return (bool)values[0];
-            }
-        }
-
-        public bool AccountIsQuarantined
-        {
-            get
-            {
-                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
         public new DateTime? AccountLockoutTime
         {
             get
@@ -242,7 +231,7 @@ namespace Kungsbacka.DS
                 {
                     return null;
                 }
-                return (int?)values[0];
+                    return (int?)values[0];
             }
             set
             {
@@ -324,6 +313,18 @@ namespace Kungsbacka.DS
             }
         }
 
+        public bool Expired
+        {
+            get
+            {
+                if (AccountExpirationDate == null)
+                {
+                    return false;
+                }
+                return AccountExpirationDate < DateTime.Now;
+            }
+        }
+
         [DirectoryProperty("employeeType")]
         public string HiddenMobilePhone
         {
@@ -360,15 +361,6 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("whenCreated")]
-        public DateTime WhenCreated
-        {
-            get
-            {
-                return (DateTime)ExtensionGet("whenCreated")[0];
-            }
-        }
-
         [DirectoryProperty("homeMDB")]
         public string ExchangeDatabase
         {
@@ -402,6 +394,23 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("mDBStorageQuota", value);
+            }
+        }
+
+        [DirectoryProperty("msExchRemoteRecipientType")]
+        [DirectoryProperty("msExchRecipientTypeDetails")]
+        [DirectoryProperty("mailNickname")]
+        public bool MailEnabled
+        {
+            get
+            {
+                if (TryGetSingleValuedString("mailNickname", out string mailNickname) &&
+                    TryGetLargeInteger("msExchRemoteRecipientType", out long remoteRecipientType) &&
+                    TryGetLargeInteger("msExchRecipientTypeDetails", out long recipientTypeDetails))
+                {
+                    return (remoteRecipientType == CLOUD_PROVISIONED_MAILBOX || remoteRecipientType == MIGRATED_MAILBOX) && recipientTypeDetails == REMOTE_USER_MAILBOX;
+                }
+                return false;
             }
         }
 
@@ -572,6 +581,14 @@ namespace Kungsbacka.DS
             }
         }
 
+        public bool Quarantined
+        {
+            get
+            {
+                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         [DirectoryProperty("carLicense")]
         public string ResourceManagerTasks
         {
@@ -628,6 +645,20 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("seeAlso", value);
+            }
+        }
+
+        [DirectoryProperty("msDS-cloudExtensionAttribute1")]
+        public string[] StashedLicenses
+        {
+            get
+            {
+                object[] values = ExtensionGet("msDS-cloudExtensionAttribute1");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return ((string)values[0]).Split(',');
             }
         }
 
@@ -717,6 +748,15 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("mDBUseDefaults", value);
+            }
+        }
+
+        [DirectoryProperty("whenCreated")]
+        public DateTime WhenCreated
+        {
+            get
+            {
+                return (DateTime)ExtensionGet("whenCreated")[0];
             }
         }
     }
