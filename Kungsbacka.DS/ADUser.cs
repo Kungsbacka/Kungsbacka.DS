@@ -20,9 +20,11 @@ namespace Kungsbacka.DS
     [DirectoryObjectClass("user")]
     public class ADUser : UserPrincipal
     {
-        private const long REMOTE_USER_MAILBOX = -2147483648;
+        private const long REMOTE_USER_MAILBOX = 2147483648;
+        private const long REMOTE_SHARED_MAILBOX = 34359738368;
         private const long CLOUD_PROVISIONED_MAILBOX = 1;
         private const long MIGRATED_MAILBOX = 4;
+        private const long MIGRATED_SHARED_MAILBOX = 100;
 
         private bool objectCategoryChanged;
         private PropertyValueCollection allowedAttributesEffective;
@@ -48,8 +50,7 @@ namespace Kungsbacka.DS
                 var largeInt = values[0] as ActiveDs.IADsLargeInteger;
                 if (largeInt != null)
                 {
-                    value = largeInt.LowPart;
-                    var y = largeInt.HighPart;
+                    value = (long)largeInt.HighPart << 32 | (uint)largeInt.LowPart;
                     return true;
                 }
             }
@@ -408,7 +409,8 @@ namespace Kungsbacka.DS
                     TryGetLargeInteger("msExchRemoteRecipientType", out long remoteRecipientType) &&
                     TryGetLargeInteger("msExchRecipientTypeDetails", out long recipientTypeDetails))
                 {
-                    return (remoteRecipientType == CLOUD_PROVISIONED_MAILBOX || remoteRecipientType == MIGRATED_MAILBOX) && recipientTypeDetails == REMOTE_USER_MAILBOX;
+                    return (remoteRecipientType == CLOUD_PROVISIONED_MAILBOX || remoteRecipientType == MIGRATED_MAILBOX || remoteRecipientType == MIGRATED_SHARED_MAILBOX)
+                        && (recipientTypeDetails == REMOTE_USER_MAILBOX || recipientTypeDetails == REMOTE_SHARED_MAILBOX);
                 }
                 return false;
             }
