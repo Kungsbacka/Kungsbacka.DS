@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using static System.FormattableString;
 using System.Globalization;
 using Kungsbacka.CommonExtensions;
+using System.Text;
 
 namespace Kungsbacka.DS
 {
@@ -12,55 +13,51 @@ namespace Kungsbacka.DS
      * SamAccountName
      *   First three letters from the first name plus the first three letters from
      *   the last name. If a collistion occurs, add a number suffix to the end (se
-     *   suffixes below). If personnmmer is supplied, the year (w/o century) is added
-     *   to the beginning.
+     *   suffixes below). If personnummer is supplied, the year (without century)
+     *   is added to the beginning.
      * 
      * UserPrincipalName
      *   First name + dot (.) + last name + at (@) + upnDomain. If a collision
      *   occurs, add a number suffix before at (@) (see suffixes below).
      *
      * CommonName
-     *   First name + space + last name. If a collision occurs, a number suffix
+     *   First name + space ( ) + last name. If a collision occurs, a number suffix
      *   is added to the end (see suffixes below).
      *
      * Normalization
      *   All names are normalized to fit the different use cases. This include
-     *   removing diacritics (SamAccountName and UserPrincipalName) and
-     *   removing characters that are illegal in AD, etc. Normalization does not
-     *   cover all cases, especially mapping characters to the english alphabet.
+     *   removing diacritics (SamAccountName and UserPrincipalName), removing
+     *   characters that can not be used in Active Directory and mapping letters
+     *   from other alphabets to letters in the english alphabet (this only maps
+     *   a small subset of letters that covers our use cases).
      *
      * Suffixes
-     *   Number suffixes are used to avoid collisions. These rules are followed when
-     *   adding a suffix.
+     *   Number suffixes are used to avoid collisions. This is the algorithm used:
      *     1. Active Directory is searched for the new name. Both
      *        UserPrincipalName and ProxyAddresses are searched for the same
-     *        name. This guarantees that the UserPrincipalName can also be used
-     *        as primary SMTP address.
+     *        name. This guarantees that the UserPrincipalName can be used as the
+     *        primary SMTP address.
      *     2. If the name is found and it has a suffix, the number suffix is stored
      *        in a list (or -1 if there is no suffix)
      *     3. When the new name is constructed, the algorithm looks at the list
      *        and selects the first available suffix starting from -1 (no suffix)
      *        and incrementing by 1 until it finds a free suffix. The suffix 1 is
-     *        skipped over (first account has no suffix, second account gets 2
-     *        as suffix).
-     *     4. If a suffix is only required for SamAccountName, a suffix is not added
-     *        to CommonName or UserPrincipalName.
-     *     5. If a suffix is needed for UserPrincipalName, the same suffix
-     *        is added to SamAccountName, but not to CommonName.
-     *     6. If a suffix is needed for Common Name, but not for UserPrincipalName,
-     *        the same suffix is added to SamAccountName
-     *
+     *        skipped over (first account has no suffix, second account gets the
+     *        suffix 2).
+     *     4. Add suffix to UPN, CN and SAM if needed. UPN only gets a suffix if
+     *        there is an UPN collision. CN and SAM always gets a suffix if one
+     *        of the names (UPN, CN, SAM) needs a suffix. The same suffix is added
+     *        to all names.
+     *        
      *   Collisions are more likely to occur for SamAccountNames compared to
      *   UserPrincipalNames. That is why the algorithm tries to avoid adding
      *   an unneccesary suffix to the UserPrincipalName (which is also the
      *   primary SMTP address).
      *   
-     *   If you create users in bulk, make sure you instantiate AccountNamesFactory
-     *   only once and use that instance for all accounts.
-     *   
-     *   Functions that tries to convert letters to a corresponding letter in the
-     *   english alphabet are adapted to our needs and only covers a very small
-     *   subset of letters (e.g. ø => o and æ => a).
+     *   Important to note is that suffixes are cached to minimize searches in
+     *   Active Directory when creating users in bulk. This introduces a risk
+     *   for collisions when creating multiple accounts with the same factory
+     *   object.
      */
 
     public class AccountNames
@@ -111,7 +108,7 @@ namespace Kungsbacka.DS
             {
                 throw new ArgumentException("firstName and lastName can not be null, empty or contain only whitespace.");
             }
-            Func<string, string> clean = str =>
+            string clean(string str)
             {
                 str = Regex.Replace(
                     str
@@ -122,7 +119,7 @@ namespace Kungsbacka.DS
                         .Replace('æ', 'a'),
                     "[^a-z]", "");
                 return str.Substring(0, Math.Min(3, str.Length));
-            };
+            }
             string sam = clean(firstName) + clean(lastName);
             if (!string.IsNullOrEmpty(employeeNumber) && employeeNumber.Length > 3)
             {
@@ -137,24 +134,25 @@ namespace Kungsbacka.DS
             {
                 throw new ArgumentException("firstName and lastName can not be null, empty or contain only whitespace.");
             }
-            Func<string, string> clean = str =>
+            string clean(string str)
             {
                 return Regex.Replace(
                     str
                         .Trim()
                         .RemoveDiacritic()
-                        .RemoveRepeating(new char[] { ' ', '-'})
+                        .RemoveRepeating(new char[] { ' ', '-' })
                         .ToLower(swedishCulture)
                         .Replace('ø', 'o')
                         .Replace('æ', 'a')
                         .Replace(' ', '-'),
                     "[^a-z-]", "");
-            };
+            }
             return clean(firstName) + "." + clean(lastName);
         }
 
         public static string GetCommonName(string firstName, string lastName)
         {
+            // Remove characters that can not be part of a Distinguished Name in Active Directory
             return Regex.Replace(GetName(firstName) + " " + GetName(lastName), "[,+\"\\<>;\r\n=/]", "");
         }
 
@@ -165,15 +163,17 @@ namespace Kungsbacka.DS
 
         public void CacheSuffix(string key, int suffix)
         {
-            if (suffixCache.ContainsKey(key))
+            if (suffixCache.TryGetValue(key, out List<int> list))
             {
-                suffixCache[key].Add(suffix);
+                if (!list.Contains(suffix))
+                {
+                    list.Add(suffix);
+                    list.Sort();
+                }
             }
             else
             {
-                var list = new List<int>();
-                list.Add(suffix);
-                suffixCache.Add(key, list);
+                suffixCache.Add(key, new List<int> { suffix });
             }
         }
 
@@ -193,12 +193,10 @@ namespace Kungsbacka.DS
             {
                 min = -1;
             }
-            if (!suffixCache.ContainsKey(key))
+            if (!suffixCache.TryGetValue(key, out List<int> list))
             {
                 return min;
             }
-            var list = suffixCache[key].Distinct().ToList();
-            list.Sort();
             if (list[0] > min)
             {
                 return min;
@@ -300,7 +298,6 @@ namespace Kungsbacka.DS
             {
                 if (!suffixCache.ContainsKey(sam))
                 {
-
                     foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.SamAccountName, Invariant($"{sam}*")))
                     {
                         string foundSam = user.SamAccountName;
@@ -361,32 +358,34 @@ namespace Kungsbacka.DS
                     user.Dispose();
                 }
             }
-            int upnSuffix = GetNextAvailableSuffix(upn);
-            int initialUpnSuffix = upnSuffix;
-            int cnSuffix = GetNextAvailableSuffix(cnWithoutDiacritics);
-            int initialCnSuffix = cnSuffix;
             AccountNames accountNames;
+            int suffix = GetNextAvailableSuffix(upn);
+            int initialUpnSuffix = suffix;
             if (excludeSam)
             {
-                while (upnSuffix != cnSuffix)
+                int suffix2 = GetNextAvailableSuffix(cnWithoutDiacritics);
+                while (suffix != suffix2)
                 {
-                    int max = Math.Max(upnSuffix, cnSuffix);
-                    upnSuffix = GetNextAvailableSuffix(upn, max);
-                    cnSuffix = GetNextAvailableSuffix(cnWithoutDiacritics, max);
+                    int max = Math.Max(suffix, suffix2);
+                    suffix = GetNextAvailableSuffix(upn, max);
+                    suffix2 = GetNextAvailableSuffix(cnWithoutDiacritics, max);
                 }
-                if (upnSuffix > -1)
+                int upnSuffix = suffix;
+                if (suffix > -1)
                 {
+                    // If no suffix was needed for UPN going in, we don't add one
                     if (initialUpnSuffix > -1)
                     {
-                        upn += upnSuffix;
-                        CacheSuffix(upn, upnSuffix);
+                        upn += suffix;
                     }
-                    if (initialCnSuffix > -1)
+                    else
                     {
-                        cn += upnSuffix;
-                        CacheSuffix(cnWithoutDiacritics, upnSuffix);
+                        upnSuffix = -1;
                     }
+                    cn += suffix;
                 }
+                CacheSuffix(upn, upnSuffix);
+                CacheSuffix(cnWithoutDiacritics, suffix);
                 accountNames = new AccountNames(
                     GetName(firstName),
                     GetName(lastName),
@@ -398,29 +397,33 @@ namespace Kungsbacka.DS
             }
             else
             {
-                int samSuffix = GetNextAvailableSuffix(sam);
-                while (upnSuffix != cnSuffix || cnSuffix != samSuffix)
+                int suffix2 = GetNextAvailableSuffix(cnWithoutDiacritics);
+                int suffix3 = GetNextAvailableSuffix(sam);
+                while (suffix != suffix2 || suffix2 != suffix3)
                 {
-                    int max = Math.Max(upnSuffix, Math.Max(cnSuffix, samSuffix));
-                    upnSuffix = GetNextAvailableSuffix(upn, max);
-                    cnSuffix = GetNextAvailableSuffix(cnWithoutDiacritics, max);
-                    samSuffix = GetNextAvailableSuffix(sam, max);
+                    int max = Math.Max(suffix, Math.Max(suffix2, suffix3));
+                    suffix = GetNextAvailableSuffix(upn, max);
+                    suffix2 = GetNextAvailableSuffix(cnWithoutDiacritics, max);
+                    suffix3 = GetNextAvailableSuffix(sam, max);
+                }
+                int upnSuffix = suffix;
+                if (suffix > -1)
+                {
+                    // If no suffix was needed for UPN going in, we don't add one
+                    if (initialUpnSuffix > -1)
+                    {
+                        upn += suffix;
+                    }
+                    else
+                    {
+                        upnSuffix = -1;
+                    }
+                    cn += suffix;
+                    sam += suffix;
                 }
                 CacheSuffix(upn, upnSuffix);
-                CacheSuffix(cnWithoutDiacritics, upnSuffix);
-                CacheSuffix(sam, upnSuffix);
-                if (upnSuffix > -1)
-                {
-                    if (initialUpnSuffix > 1)
-                    {
-                        upn += upnSuffix;
-                    }
-                    if (initialCnSuffix > -1)
-                    {
-                        cn += upnSuffix;
-                    }
-                    sam += upnSuffix;
-                }
+                CacheSuffix(cnWithoutDiacritics, suffix);
+                CacheSuffix(sam, suffix);
                 accountNames = new AccountNames(
                     GetName(firstName),
                     GetName(lastName),

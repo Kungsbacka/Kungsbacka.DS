@@ -146,9 +146,24 @@ namespace Kungsbacka.DS.UnitTests
         public void TestGetAccountNames5()
         {
             var an = new AccountNamesFactory();
-            var names1 = an.GetNames("Unique", "Name", "example.com", "199001010101");
-            var names2 = an.GetNames("Unique", "Name", "example.com", "199001010101");
+            var names1 = an.GetNames("First", "Last", "example.com", "199001010101");
+            var names2 = an.GetNames("First", "Last", "example.com", "199001010101");
+            var names3 = an.GetNames("First", "Last", "example.com", "199001010101");
             Assert.AreNotEqual(names1.SamAccountName, names2.SamAccountName);
+            Assert.AreNotEqual(names1.SamAccountName, names3.SamAccountName);
+            Assert.AreNotEqual(names2.SamAccountName, names3.SamAccountName);
+        }
+
+        [TestMethod]
+        public void TestGetAccountNames6()
+        {
+            var an = new AccountNamesFactory();
+            var names1 = an.GetNames("First", "Last", "example.com", "199001010101", true);
+            var names2 = an.GetNames("First", "Last", "example.com", "199001010101", true);
+            var names3 = an.GetNames("First", "Last", "example.com", "199001010101", true);
+            Assert.AreNotEqual(names1.UserPrincipalName, names2.UserPrincipalName);
+            Assert.AreNotEqual(names1.UserPrincipalName, names3.UserPrincipalName);
+            Assert.AreNotEqual(names2.UserPrincipalName, names3.UserPrincipalName);
         }
 
     }
