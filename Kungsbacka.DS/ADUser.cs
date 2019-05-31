@@ -141,7 +141,7 @@ namespace Kungsbacka.DS
             return DistinguishedName;
         }
 
-        public ReadOnlyCollection<string> GetManagedGroups()
+        public IEnumerable<string> GetManagedGroups()
         {
             var groups = new HashSet<string>();
             using (var searchRoot = new DirectoryEntry("LDAP://DC=kba,DC=local"))
@@ -160,7 +160,7 @@ namespace Kungsbacka.DS
                     }
                 }
             }
-            return new ReadOnlyCollection<string>(groups.ToList());
+            return groups;
         }
 
         public new DateTime? AccountExpirationDate
@@ -416,6 +416,23 @@ namespace Kungsbacka.DS
             }
         }
 
+        public bool? Managed
+        {
+            get
+            {
+                // If enabled is null, this is most likely a new account that is not saved
+                // to Active Directory and we cannot tell if it's managed or not.
+                if (Enabled == null)
+                {
+                    return null;
+                }
+                return (bool)Enabled
+                    && !string.IsNullOrEmpty(EmployeeNumber)
+                    && AccountProcessingRules != null
+                    && AccountProcessingRules > 0;
+            }
+        }
+
         [DirectoryProperty("manager")]
         public string Manager
         {
@@ -587,7 +604,8 @@ namespace Kungsbacka.DS
         {
             get
             {
-                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
+                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase)
+                    || DistinguishedName.EndsWith(",OU=Quarantine,OU=Users,OU=Admin,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
             }
         }
 
