@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Kungsbacka.DS
 {
-    public class ADLicenseGroup
+    public class ADLicenseGroup : IComparable<ADLicenseGroup>
     {
         public Guid Guid { get; set; }
         public string DistinguishedName { get; set; }
@@ -14,5 +14,15 @@ namespace Kungsbacka.DS
         public string BaseLicense { get; set; }
         public bool Dynamic { get; set; }
         public bool Standard { get; set; }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
+        public int CompareTo(ADLicenseGroup that)
+        {
+            return this.DisplayName.CompareTo(that.DisplayName);
+        }
     }
 }

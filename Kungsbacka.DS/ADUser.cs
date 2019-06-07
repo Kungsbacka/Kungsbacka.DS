@@ -29,7 +29,7 @@ namespace Kungsbacka.DS
         private bool objectCategoryChanged;
         private PropertyValueCollection allowedAttributesEffective;
 
-        private bool TryGetSingleValuedString(string propertyName, out string value)
+        private bool TryGetSingleValuedStringProperty(string propertyName, out string value)
         {
             value = null;
             object[] values = ExtensionGet(propertyName);
@@ -41,7 +41,7 @@ namespace Kungsbacka.DS
             return false;
         }
 
-        private bool TryGetLargeInteger(string propertyName, out long value)
+        private bool TryGetLargeIntegerProperty(string propertyName, out long value)
         {
             value = 0;
             object[] values = ExtensionGet(propertyName);
@@ -87,47 +87,6 @@ namespace Kungsbacka.DS
             return allowedAttributesEffective.Contains(attribute);
         }
 
-        // This assumes a few things about the environment:
-        // - Most attributes that we are interested in are readable by normal users
-        // - Permission to read a confidential attribute is assigned to groups only
-        public bool CanReadAttribute(string attribute)
-        {
-            if (ADSchema.IsAttributeConfidential(attribute))
-            {
-                using (var windowsIdentity = WindowsIdentity.GetCurrent())
-                {
-                    // Domain Admin?
-                    using (var currentUser = DSFactory.FindUserBySid(windowsIdentity.User))
-                    {
-                        var domainAdminsSid = new SecurityIdentifier(WellKnownSidType.AccountDomainAdminsSid, currentUser.Sid.AccountDomainSid);
-                        if (currentUser.IsMemberOf(currentUser.Context, IdentityType.Sid, domainAdminsSid.Value))
-                        {
-                            return true;
-                        }
-                    }
-                    // Member of a group that grants access?
-                    var userSchemaGuid = ADSchema.GetClassSchemaGuid("user");
-                    var attributeSchemaGuid = ADSchema.GetAttributeSchemaGuid(attribute);
-                    var groups = windowsIdentity.Groups;
-                    var de = (DirectoryEntry)GetUnderlyingObject();
-                    var acl = de.ObjectSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
-                    // Check ADS_RIGHT_DS_CONTROL_ACCESS where object type is the attribute being checked and inherited object type is user.
-                    foreach (ActiveDirectoryAccessRule ace in acl)
-                    {
-                        if (ace.ActiveDirectoryRights == ActiveDirectoryRights.ExtendedRight && ace.ObjectType == attributeSchemaGuid && ace.InheritedObjectType == userSchemaGuid)
-                        {
-                            if (groups.Contains(ace.IdentityReference))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-
         public new void Delete()
         {
             CheckDisposedOrDeleted();
@@ -139,28 +98,6 @@ namespace Kungsbacka.DS
         public new string ToString()
         {
             return DistinguishedName;
-        }
-
-        public IEnumerable<string> GetManagedGroups()
-        {
-            var groups = new HashSet<string>();
-            using (var searchRoot = new DirectoryEntry("LDAP://DC=kba,DC=local"))
-            using (var searcher = new DirectorySearcher(searchRoot, "(&(objectCategory=group)(managedBy=*))", new string[] { "managedBy", "distinguishedName" }))
-            {
-                foreach (SearchResult result in searcher.FindAll())
-                {
-                    string managedBy = (string)result.Properties["managedBy"][0];
-                    string filter = $"(&(member:1.2.840.113556.1.4.1941:={DistinguishedName})(distinguishedName={managedBy}))";
-                    using (var searcher2 = new DirectorySearcher(searchRoot, filter))
-                    {
-                        if (searcher2.FindOne() != null)
-                        {
-                            groups.Add((string)result.Properties["distinguishedName"][0]);
-                        }
-                    }
-                }
-            }
-            return groups;
         }
 
         public new DateTime? AccountExpirationDate
@@ -232,7 +169,7 @@ namespace Kungsbacka.DS
                 {
                     return null;
                 }
-                    return (int?)values[0];
+                return (int?)values[0];
             }
             set
             {
@@ -362,42 +299,6 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("homeMDB")]
-        public string ExchangeDatabase
-        {
-            get
-            {
-                object[] values = ExtensionGet("homeMDB");
-                if (values.Length != 1)
-                {
-                    return null;
-                }
-                return (string)values[0];
-            }
-            set
-            {
-                ExtensionSet("homeMDB", value);
-            }
-        }
-
-        [DirectoryProperty("mDBStorageQuota")]
-        public int? IssueWarningQuota
-        {
-            get
-            {
-                object[] values = ExtensionGet("mDBStorageQuota");
-                if (values.Length != 1)
-                {
-                    return null;
-                }
-                return (int?)values[0];
-            }
-            set
-            {
-                ExtensionSet("mDBStorageQuota", value);
-            }
-        }
-
         [DirectoryProperty("msExchRemoteRecipientType")]
         [DirectoryProperty("msExchRecipientTypeDetails")]
         [DirectoryProperty("mailNickname")]
@@ -405,9 +306,9 @@ namespace Kungsbacka.DS
         {
             get
             {
-                if (TryGetSingleValuedString("mailNickname", out string mailNickname) &&
-                    TryGetLargeInteger("msExchRemoteRecipientType", out long remoteRecipientType) &&
-                    TryGetLargeInteger("msExchRecipientTypeDetails", out long recipientTypeDetails))
+                if (TryGetSingleValuedStringProperty("mailNickname", out string mailNickname) &&
+                    TryGetLargeIntegerProperty("msExchRemoteRecipientType", out long remoteRecipientType) &&
+                    TryGetLargeIntegerProperty("msExchRecipientTypeDetails", out long recipientTypeDetails))
                 {
                     return (remoteRecipientType == CLOUD_PROVISIONED_MAILBOX || remoteRecipientType == MIGRATED_MAILBOX || remoteRecipientType == MIGRATED_SHARED_MAILBOX)
                         && (recipientTypeDetails == REMOTE_USER_MAILBOX || recipientTypeDetails == REMOTE_SHARED_MAILBOX);
@@ -444,7 +345,7 @@ namespace Kungsbacka.DS
                     return null;
                 }
                 var value = (string)values[0];
-                if (value.IndexOf(",CN=Deleted Objects,DC=", StringComparison.OrdinalIgnoreCase) != -1)
+                if (value.IndexOf(",CN=Deleted Objects,DC=", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     return null;
                 }
@@ -465,16 +366,16 @@ namespace Kungsbacka.DS
         }
 
         [DirectoryProperty("memberOf")]
-        public object[] MemberOf
+        public IEnumerable<string> MemberOf
         {
             get
             {
                 object[] values = ExtensionGet("memberOf");
                 if (values.Length == 0)
                 {
-                    return null;
+                    return Enumerable.Empty<string>();
                 }
-                return values;
+                return values.Cast<string>();
             }
         }
 
@@ -546,42 +447,6 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("mDBOverQuotaLimit")]
-        public int? ProhibitSendQuota
-        {
-            get
-            {
-                object[] values = ExtensionGet("mDBOverQuotaLimit");
-                if (values.Length != 1)
-                {
-                    return null;
-                }
-                return (int?)values[0];
-            }
-            set
-            {
-                ExtensionSet("mDBOverQuotaLimit", value);
-            }
-        }
-
-        [DirectoryProperty("mDBOverHardQuotaLimit")]
-        public int? ProhibitSendReceiveQuota
-        {
-            get
-            {
-                object[] values = ExtensionGet("mDBOverHardQuotaLimit");
-                if (values.Length != 1)
-                {
-                    return null;
-                }
-                return (int?)values[0];
-            }
-            set
-            {
-                ExtensionSet("mDBOverHardQuotaLimit", value);
-            }
-        }
-
         [DirectoryProperty("proxyAddresses")]
         public object[] ProxyAddresses
         {
@@ -604,8 +469,7 @@ namespace Kungsbacka.DS
         {
             get
             {
-                return DistinguishedName.EndsWith(",OU=Quarantine,OU=Kommun,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase)
-                    || DistinguishedName.EndsWith(",OU=Quarantine,OU=Users,OU=Admin,DC=kba,DC=local", StringComparison.OrdinalIgnoreCase);
+                return DistinguishedName.IndexOf(",OU=Quarantine,", StringComparison.OrdinalIgnoreCase) > -1;
             }
         }
 
@@ -669,7 +533,7 @@ namespace Kungsbacka.DS
         }
 
         [DirectoryProperty("msDS-cloudExtensionAttribute1")]
-        public string[] StashedLicenses
+        public IEnumerable<Guid> StashedLicenses
         {
             get
             {
@@ -678,7 +542,24 @@ namespace Kungsbacka.DS
                 {
                     return null;
                 }
-                return ((string)values[0]).Split(',');
+                string[] parts = ((string)values[0]).Split(',');
+                if (parts.Length == 0)
+                {
+                    return Enumerable.Empty<Guid>();
+                }
+                Guid[] guids = new Guid[parts.Length];
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (System.Guid.TryParse(parts[i], out var guid))
+                    {
+                        guids[i] = guid;
+                    }
+                    else
+                    {
+                        return Enumerable.Empty<Guid>();
+                    }
+                }
+                return guids;
             }
         }
 
@@ -754,20 +635,6 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("title", value);
-            }
-        }
-
-        [DirectoryProperty("mDBUseDefaults")]
-        public bool UseDatabaseQuotaDefaults
-        {
-            get
-            {
-                object[] values = ExtensionGet("mDBUseDefaults");
-                return values.Length == 1 && (bool)values[0];
-            }
-            set
-            {
-                ExtensionSet("mDBUseDefaults", value);
             }
         }
 

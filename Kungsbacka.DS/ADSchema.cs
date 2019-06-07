@@ -6,8 +6,6 @@ namespace Kungsbacka.DS
 {
     public static class ADSchema
     {
-
-
         private class SchemaClass
         {
             public string LdapDisplayName { get; set; }

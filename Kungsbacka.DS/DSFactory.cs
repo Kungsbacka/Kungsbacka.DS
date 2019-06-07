@@ -27,16 +27,26 @@ namespace Kungsbacka.DS
     public static class DSFactory
     {
         private static PrincipalContext principalContext;
+        // private static DirectoryEntry
 
-        public static PrincipalContext DefaultContext
+
+        public static PrincipalContext PrincipalContext
         {
             get
             {
-                if (null == principalContext)
+                if (principalContext == null)
                 {
                     principalContext = CreatePrincipalContext();
                 }
                 return principalContext;
+            }
+            set
+            {
+                if (principalContext != null)
+                {
+                    principalContext.Dispose();
+                }
+                principalContext = value;
             }
         }
 
@@ -52,7 +62,7 @@ namespace Kungsbacka.DS
         public static IList<ADUser> SearchUser(UserSearchProperty searchProperty, string searchString)
         {
             var list = new List<ADUser>();
-            using (ADUser qbePrincipal = new ADUser(DefaultContext))
+            using (ADUser qbePrincipal = new ADUser(PrincipalContext))
             {
                 // Filter out unwanted objects like computers
                 qbePrincipal.ObjectCategory = ADSchema.GetSchemaClassDistinguishedName("person");
@@ -96,7 +106,7 @@ namespace Kungsbacka.DS
         public static IList<ADGroup> SearchGroup(GroupSearchProperty searchProperty, string searchString)
         {
             var list = new List<ADGroup>();
-            using (ADGroup qbeGroup = new ADGroup(DefaultContext))
+            using (ADGroup qbeGroup = new ADGroup(PrincipalContext))
             {
                 switch (searchProperty)
                 {
@@ -141,15 +151,15 @@ namespace Kungsbacka.DS
         public static IList<ADLicenseGroup> GetLicenseGroups() => GetLicenseGroups(false);
 
         public static ADUser FindUserByDistinguishedName(string distinguishedName) =>
-            ADUser.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
+            ADUser.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
 
         public static ADUser FindUserBySamAccountName(string samAccountName) =>
-            ADUser.FindByIdentity(DefaultContext, IdentityType.SamAccountName, samAccountName);
+            ADUser.FindByIdentity(PrincipalContext, IdentityType.SamAccountName, samAccountName);
 
         public static ADUser FindUserBySid(SecurityIdentifier sid) => 
-            ADUser.FindByIdentity(DefaultContext, IdentityType.Sid, sid.Value);
+            ADUser.FindByIdentity(PrincipalContext, IdentityType.Sid, sid.Value);
 
         public static ADGroup FindGroupByDistinguishedName(string distinguishedName) =>
-            ADGroup.FindByIdentity(DefaultContext, IdentityType.DistinguishedName, distinguishedName);
+            ADGroup.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
     }
 }
