@@ -263,6 +263,24 @@ namespace Kungsbacka.DS
             }
         }
 
+        [DirectoryProperty("msExchHideFromAddressLists")]
+        public bool HideFromAddressLists
+        {
+            get
+            {
+                object[] values = ExtensionGet("msExchHideFromAddressLists");
+                if (values.Length != 1)
+                {
+                    return false;
+                }
+                return (bool)values[0];
+            }
+            set
+            {
+                ExtensionSet("msExchHideFromAddressLists", value);
+            }
+        }
+
         [DirectoryProperty("employeeType")]
         public string HiddenMobilePhone
         {
@@ -397,6 +415,14 @@ namespace Kungsbacka.DS
             }
         }
 
+        public bool NonDeliveryReceiptRuleEnabled
+        {
+            get
+            {
+                return MemberOf.Any(t => t.StartsWith("CN=U-exch-ndr-mailbox", StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
         [DirectoryProperty("objectCategory")]
         public string ObjectCategory
         {
@@ -447,21 +473,92 @@ namespace Kungsbacka.DS
             }
         }
 
+        public string PrimarySmtpAddress
+        {
+            get
+            {
+                foreach (string address in ProxyAddresses)
+                {
+
+                    if (address.StartsWith("SMTP:", StringComparison.Ordinal))
+                    {
+                        return address.Substring(5);
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                var addressList = new List<string>(ProxyAddresses);
+                var oldPrimary = PrimarySmtpAddress;
+                if (!string.IsNullOrEmpty(oldPrimary))
+                {
+                    addressList.Remove("SMTP:" + oldPrimary);
+                }
+                if (!string.IsNullOrEmpty(value))
+                {
+                    string newPrimary;
+                    if (value.StartsWith("smtp:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        newPrimary = "SMTP:" + value.Substring(5);
+                    }
+                    else
+                    {
+                        newPrimary = "SMTP:" + value;
+                    }
+                    addressList.Add(newPrimary);
+                }
+                ProxyAddresses = addressList;
+            }
+        }
+
+        public IEnumerable<string> SecondarySmtpAddresses
+        {
+            get
+            {
+                var addressList = new List<string>(3); // Only a few users have more than 3 secondary addresses
+                foreach (string address in ProxyAddresses ?? Enumerable.Empty<object>())
+                {
+                    if (address.StartsWith("smtp:", StringComparison.Ordinal))
+                    {
+                        addressList.Add(address.Substring(5));
+                    }
+                }
+                return addressList;
+            }
+            set
+            {
+                var addressList = new List<string>(ProxyAddresses.Except(SecondarySmtpAddresses.Select(t => "smtp:" + t)));
+                foreach (var address in value ?? Enumerable.Empty<string>())
+                {
+                    if (address.StartsWith("smtp:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        addressList.Add("smtp:" + address.Substring(5));
+                    }
+                    else
+                    {
+                        addressList.Add("smtp:" + address);
+                    }
+                }
+                ProxyAddresses = addressList;
+            }
+        }
+
         [DirectoryProperty("proxyAddresses")]
-        public object[] ProxyAddresses
+        public IEnumerable<string> ProxyAddresses
         {
             get
             {
                 object[] values = ExtensionGet("proxyAddresses");
                 if (values.Length == 0)
                 {
-                    return null;
+                    return Enumerable.Empty<string>();
                 }
-                return values;
+                return values.Cast<string>();
             }
             set
             {
-                ExtensionSet("proxyAddresses", value);
+                ExtensionSet("proxyAddresses", value.ToArray());
             }
         }
 

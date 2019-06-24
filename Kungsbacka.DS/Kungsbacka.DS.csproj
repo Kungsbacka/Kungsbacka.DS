@@ -51,7 +51,7 @@
     <Compile Include="ADUser.cs" />
     <Compile Include="DSFactory.cs" />
     <Compile Include="FormattableString.cs" />
-    <Compile Include="LicenseGroup.cs" />
+    <Compile Include="ADLicenseGroup.cs" />
     <Compile Include="PasswordGenerator.cs" />
     <Compile Include="PasswordValidator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
