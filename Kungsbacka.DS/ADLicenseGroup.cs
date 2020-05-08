@@ -14,6 +14,7 @@ namespace Kungsbacka.DS
         public string BaseLicense { get; set; }
         public bool Dynamic { get; set; }
         public bool Standard { get; set; }
+        public bool MailEnabled { get; set; }
 
         public override string ToString()
         {

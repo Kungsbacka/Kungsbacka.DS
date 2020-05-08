@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.Security.Principal;
 using System.Linq;
 
 namespace Kungsbacka.DS
@@ -12,8 +10,8 @@ namespace Kungsbacka.DS
     public enum AccountProcessingRules
     {
         None = 0,
-        SourcedFromPersonec = 1,
-        SourcedFromProcapita = 2
+        SourcedFromPersonalsystem = 1,
+        SourcedFromElevregister = 2
     };
 
     [DirectoryRdnPrefix("CN")]
@@ -25,6 +23,8 @@ namespace Kungsbacka.DS
         private const long CLOUD_PROVISIONED_MAILBOX = 1;
         private const long MIGRATED_MAILBOX = 4;
         private const long MIGRATED_SHARED_MAILBOX = 100;
+        private const long PASSWORD_NEVER_EXPIRES = 0x7fffffffffffffff;
+
 
         private bool objectCategoryChanged;
         private PropertyValueCollection allowedAttributesEffective;
@@ -90,8 +90,7 @@ namespace Kungsbacka.DS
         public new void Delete()
         {
             CheckDisposedOrDeleted();
-            var directoryEntry = (DirectoryEntry)GetUnderlyingObject();
-            directoryEntry.DeleteTree();
+            ((DirectoryEntry)GetUnderlyingObject()).DeleteTree();
             Dispose();
         }
 
@@ -206,11 +205,7 @@ namespace Kungsbacka.DS
         {
             get
             {
-                if (null == LastPasswordSet)
-                {
-                    return 0;
-                }
-                int days = 180 - (DateTime.Now - (DateTime)LastPasswordSet).Days;
+                int days = (PasswordExpiryTime - DateTime.Now).Days;
                 return days > 0 ? days : 0;
             }
         }
@@ -470,6 +465,27 @@ namespace Kungsbacka.DS
             set
             {
                 ExtensionSet("msDS-cloudExtensionAttribute2", value);
+            }
+        }
+
+        [DirectoryProperty("msDS-UserPasswordExpiryTimeComputed")]
+        public DateTime PasswordExpiryTime
+        {
+            get
+            {
+                ((DirectoryEntry)GetUnderlyingObject()).RefreshCache(new string[] { "msDS-UserPasswordExpiryTimeComputed" });
+                if (TryGetLargeIntegerProperty("msDS-UserPasswordExpiryTimeComputed", out long expiryTime))
+                {
+                    if (expiryTime == PASSWORD_NEVER_EXPIRES)
+                    {
+                        return DateTime.MaxValue;
+                    }
+                    else if (expiryTime > 0)
+                    {
+                        return DateTime.FromFileTime(expiryTime);
+                    }
+                }
+                return DateTime.Now;
             }
         }
 
