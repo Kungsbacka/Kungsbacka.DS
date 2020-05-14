@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
+using System.Linq;
 using System.Security.Principal;
 
 namespace Kungsbacka.DS
@@ -50,18 +50,24 @@ namespace Kungsbacka.DS
             }
         }
 
-        public static PrincipalContext CreatePrincipalContext() =>
-            new PrincipalContext(ContextType.Domain);
+        public static PrincipalContext CreatePrincipalContext()
+        {
+            return new PrincipalContext(ContextType.Domain);
+        }
 
-        public static PrincipalContext CreatePrincipalContext(string container) =>
-            new PrincipalContext(ContextType.Domain, null, container);
+        public static PrincipalContext CreatePrincipalContext(string container)
+        {
+            return new PrincipalContext(ContextType.Domain, null, container);
+        }
 
-        public static PrincipalContext CreatePrincipalContext(string userName, string password) =>
-            new PrincipalContext(ContextType.Domain, null, userName, password);
+        public static PrincipalContext CreatePrincipalContext(string userName, string password)
+        {
+            return new PrincipalContext(ContextType.Domain, null, userName, password);
+        }
 
         public static IList<ADUser> SearchUser(UserSearchProperty searchProperty, string searchString)
         {
-            var list = new List<ADUser>();
+            List<ADUser> list = new List<ADUser>();
             using (ADUser qbePrincipal = new ADUser(PrincipalContext))
             {
                 // Filter out unwanted objects like computers
@@ -95,7 +101,7 @@ namespace Kungsbacka.DS
                     default:
                         throw new NotImplementedException(searchProperty.ToString());
                 }
-                using (var principalSearcher = new PrincipalSearcher(qbePrincipal))
+                using (PrincipalSearcher principalSearcher = new PrincipalSearcher(qbePrincipal))
                 {
                     list.AddRange(principalSearcher.FindAll().Cast<ADUser>());
                 }
@@ -105,7 +111,7 @@ namespace Kungsbacka.DS
 
         public static IList<ADGroup> SearchGroup(GroupSearchProperty searchProperty, string searchString)
         {
-            var list = new List<ADGroup>();
+            List<ADGroup> list = new List<ADGroup>();
             using (ADGroup qbeGroup = new ADGroup(PrincipalContext))
             {
                 switch (searchProperty)
@@ -119,7 +125,7 @@ namespace Kungsbacka.DS
                     default:
                         throw new NotImplementedException(searchProperty.ToString());
                 }
-                using (var principalSearcher = new PrincipalSearcher(qbeGroup))
+                using (PrincipalSearcher principalSearcher = new PrincipalSearcher(qbeGroup))
                 {
                     list.AddRange(principalSearcher.FindAll().Cast<ADGroup>());
                 }
@@ -130,8 +136,8 @@ namespace Kungsbacka.DS
         private static ADLicenseGroup LicenseGroupFromADGroup(ADGroup adGroup)
         {
             string json = adGroup.Location.Substring(8);
-            var jsonSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-            var licenseGroup = jsonSerializer.Deserialize<ADLicenseGroup>(json);
+            System.Web.Script.Serialization.JavaScriptSerializer jsonSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            ADLicenseGroup licenseGroup = jsonSerializer.Deserialize<ADLicenseGroup>(json);
             licenseGroup.Guid = (Guid)adGroup.Guid;
             licenseGroup.DistinguishedName = adGroup.DistinguishedName;
             licenseGroup.DisplayName = adGroup.DisplayName;
@@ -140,7 +146,7 @@ namespace Kungsbacka.DS
 
         public static IList<ADLicenseGroup> GetLicenseGroups(bool standardOnly)
         {
-            var searchResult = SearchGroup(GroupSearchProperty.Location, "license:*");
+            IList<ADGroup> searchResult = SearchGroup(GroupSearchProperty.Location, "license:*");
             if (standardOnly)
             {
                 return searchResult.Select(g => LicenseGroupFromADGroup(g)).Where(g => g.Standard && !g.Dynamic).ToList();
@@ -148,18 +154,29 @@ namespace Kungsbacka.DS
             return searchResult.Select(g => LicenseGroupFromADGroup(g)).Where(g => !g.Dynamic).ToList();
         }
 
-        public static IList<ADLicenseGroup> GetLicenseGroups() => GetLicenseGroups(false);
+        public static IList<ADLicenseGroup> GetLicenseGroups()
+        {
+            return GetLicenseGroups(false);
+        }
 
-        public static ADUser FindUserByDistinguishedName(string distinguishedName) =>
-            ADUser.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
+        public static ADUser FindUserByDistinguishedName(string distinguishedName)
+        {
+            return ADUser.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
+        }
 
-        public static ADUser FindUserBySamAccountName(string samAccountName) =>
-            ADUser.FindByIdentity(PrincipalContext, IdentityType.SamAccountName, samAccountName);
+        public static ADUser FindUserBySamAccountName(string samAccountName)
+        {
+            return ADUser.FindByIdentity(PrincipalContext, IdentityType.SamAccountName, samAccountName);
+        }
 
-        public static ADUser FindUserBySid(SecurityIdentifier sid) => 
-            ADUser.FindByIdentity(PrincipalContext, IdentityType.Sid, sid.Value);
+        public static ADUser FindUserBySid(SecurityIdentifier sid)
+        {
+            return ADUser.FindByIdentity(PrincipalContext, IdentityType.Sid, sid.Value);
+        }
 
-        public static ADGroup FindGroupByDistinguishedName(string distinguishedName) =>
-            ADGroup.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
+        public static ADGroup FindGroupByDistinguishedName(string distinguishedName)
+        {
+            return ADGroup.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
+        }
     }
 }

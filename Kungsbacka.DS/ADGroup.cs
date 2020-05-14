@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.DirectoryServices.AccountManagement;
-using System.Security.Principal;
 using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
+using System.Linq;
 using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace Kungsbacka.DS
 {
@@ -11,9 +11,8 @@ namespace Kungsbacka.DS
     [DirectoryObjectClass("group")]
     public class ADGroup : GroupPrincipal
     {
-        static readonly Guid memberAttributeGuid = new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2");
-
-        SecurityIdentifier managedBySid;
+        private static readonly Guid memberAttributeGuid = new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2");
+        private SecurityIdentifier managedBySid;
 
         public ADGroup(PrincipalContext context) : base(context) { }
 
@@ -39,10 +38,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("location", value);
-            }
+            set => ExtensionSet("location", value);
         }
 
         [DirectoryProperty("managedBy")]
@@ -57,10 +53,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("managedBy", value);
-            }
+            set => ExtensionSet("managedBy", value);
         }
 
         [DirectoryProperty("extensionAttribute11")]
@@ -95,7 +88,7 @@ namespace Kungsbacka.DS
             {
                 return;
             }
-            using (var manager = DSFactory.FindGroupByDistinguishedName(managedBy))
+            using (ADGroup manager = DSFactory.FindGroupByDistinguishedName(managedBy))
             {
                 managedBySid = manager.Sid;
             }
@@ -122,10 +115,10 @@ namespace Kungsbacka.DS
 
         public void SetManagerCanUpdateMembership(bool enabled)
         {
-            var de = (DirectoryEntry)GetUnderlyingObject();
-            var sec = de.ObjectSecurity.GetAccessRules(true, false, typeof(SecurityIdentifier));
-            var newRule = GetNewUpdateMembershipRule();
-            var rule = sec.Cast<ActiveDirectoryAccessRule>().FirstOrDefault(r => AreAccessRulesEqual(r, newRule));
+            DirectoryEntry de = (DirectoryEntry)GetUnderlyingObject();
+            AuthorizationRuleCollection sec = de.ObjectSecurity.GetAccessRules(true, false, typeof(SecurityIdentifier));
+            ActiveDirectoryAccessRule newRule = GetNewUpdateMembershipRule();
+            ActiveDirectoryAccessRule rule = sec.Cast<ActiveDirectoryAccessRule>().FirstOrDefault(r => AreAccessRulesEqual(r, newRule));
             if (enabled && rule == null)
             {
                 de.ObjectSecurity.AddAccessRule(newRule);
@@ -138,9 +131,9 @@ namespace Kungsbacka.DS
 
         public bool GetManagerCanUpdateMembership()
         {
-            var rule = GetNewUpdateMembershipRule();
-            var de = (DirectoryEntry)GetUnderlyingObject();
-            var sec = de.ObjectSecurity.GetAccessRules(true, false, typeof(SecurityIdentifier));
+            ActiveDirectoryAccessRule rule = GetNewUpdateMembershipRule();
+            DirectoryEntry de = (DirectoryEntry)GetUnderlyingObject();
+            AuthorizationRuleCollection sec = de.ObjectSecurity.GetAccessRules(true, false, typeof(SecurityIdentifier));
             return sec.Cast<ActiveDirectoryAccessRule>().Any(r => AreAccessRulesEqual(r, rule));
         }
     }

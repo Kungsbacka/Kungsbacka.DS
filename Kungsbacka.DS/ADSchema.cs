@@ -20,18 +20,17 @@ namespace Kungsbacka.DS
             public bool IsConfidential { get; set; }
         }
 
-        private static Dictionary<string, SchemaClass> schemaClassCache = new Dictionary<string, SchemaClass>();
-        private static Dictionary<string, SchemaProperty> schemaPropertyCache = new Dictionary<string, SchemaProperty>();
+        private static readonly Dictionary<string, SchemaClass> schemaClassCache = new Dictionary<string, SchemaClass>();
+        private static readonly Dictionary<string, SchemaProperty> schemaPropertyCache = new Dictionary<string, SchemaProperty>();
 
         private static SchemaClass GetSchemaClass(string className)
         {
-            SchemaClass schemaClass;
-            if (!schemaClassCache.TryGetValue(className, out schemaClass))
+            if (!schemaClassCache.TryGetValue(className, out SchemaClass schemaClass))
             {
-                using (var schema = ActiveDirectorySchema.GetCurrentSchema())
+                using (ActiveDirectorySchema schema = ActiveDirectorySchema.GetCurrentSchema())
                 {
-                    var result = schema.FindClass(className);
-                    var directoryEntry = result.GetDirectoryEntry();
+                    ActiveDirectorySchemaClass result = schema.FindClass(className);
+                    System.DirectoryServices.DirectoryEntry directoryEntry = result.GetDirectoryEntry();
                     schemaClass = new SchemaClass()
                     {
                         LdapDisplayName = result.Name,
@@ -46,13 +45,12 @@ namespace Kungsbacka.DS
 
         private static SchemaProperty GetSchemaProperty(string propertyName)
         {
-            SchemaProperty schemaProperty;
-            if (!schemaPropertyCache.TryGetValue(propertyName, out schemaProperty))
+            if (!schemaPropertyCache.TryGetValue(propertyName, out SchemaProperty schemaProperty))
             {
-                using (var schema = ActiveDirectorySchema.GetCurrentSchema())
+                using (ActiveDirectorySchema schema = ActiveDirectorySchema.GetCurrentSchema())
                 {
-                    var result = schema.FindProperty(propertyName);
-                    var directoryEntry = result.GetDirectoryEntry();
+                    ActiveDirectorySchemaProperty result = schema.FindProperty(propertyName);
+                    System.DirectoryServices.DirectoryEntry directoryEntry = result.GetDirectoryEntry();
                     schemaProperty = new SchemaProperty()
                     {
                         LdapDisplayName = result.Name,

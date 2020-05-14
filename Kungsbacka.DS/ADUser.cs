@@ -47,7 +47,7 @@ namespace Kungsbacka.DS
             object[] values = ExtensionGet(propertyName);
             if (values.Length == 1)
             {
-                var largeInt = values[0] as ActiveDs.IADsLargeInteger;
+                ActiveDs.IADsLargeInteger largeInt = values[0] as ActiveDs.IADsLargeInteger;
                 if (largeInt != null)
                 {
                     value = (long)largeInt.HighPart << 32 | (uint)largeInt.LowPart;
@@ -60,7 +60,8 @@ namespace Kungsbacka.DS
         public ADUser(PrincipalContext context) : base(context) { }
 
         public ADUser(PrincipalContext context, string samAccountName, string password, bool enabled) :
-            base(context, samAccountName, password, enabled) { }
+            base(context, samAccountName, password, enabled)
+        { }
 
         public static new ADUser FindByIdentity(PrincipalContext context, IdentityType identityType, string identityValue)
         {
@@ -101,23 +102,11 @@ namespace Kungsbacka.DS
 
         public new DateTime? AccountExpirationDate
         {
-            get
-            {
-                return base.AccountExpirationDate?.ToLocalTime();
-            }
-            set
-            {
-                base.AccountExpirationDate = value?.ToUniversalTime();
-            }
+            get => base.AccountExpirationDate?.ToLocalTime();
+            set => base.AccountExpirationDate = value?.ToUniversalTime();
         }
 
-        public new DateTime? AccountLockoutTime
-        {
-            get
-            {
-                return base.AccountLockoutTime?.ToLocalTime();
-            }
-        }
+        public new DateTime? AccountLockoutTime => base.AccountLockoutTime?.ToLocalTime();
 
         public string AccountLocation
         {
@@ -152,10 +141,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("msDS-cloudExtensionAttribute15", value);
-            }
+            set => ExtensionSet("msDS-cloudExtensionAttribute15", value);
         }
 
         [DirectoryProperty("gidNumber")]
@@ -195,10 +181,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("anr", value);
-            }
+            set => ExtensionSet("anr", value);
         }
 
         public int DaysBeforeNextPasswordChange
@@ -222,10 +205,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("department", value);
-            }
+            set => ExtensionSet("department", value);
         }
 
         [DirectoryProperty("employeeNumber")]
@@ -240,10 +220,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("employeeNumber", value);
-            }
+            set => ExtensionSet("employeeNumber", value);
         }
 
         public bool Expired
@@ -270,10 +247,7 @@ namespace Kungsbacka.DS
                 }
                 return (bool)values[0];
             }
-            set
-            {
-                ExtensionSet("msExchHideFromAddressLists", value);
-            }
+            set => ExtensionSet("msExchHideFromAddressLists", value);
         }
 
         [DirectoryProperty("employeeType")]
@@ -288,10 +262,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("employeeType", value);
-            }
+            set => ExtensionSet("employeeType", value);
         }
 
         [DirectoryProperty("initials")]
@@ -306,10 +277,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("initials", value);
-            }
+            set => ExtensionSet("initials", value);
         }
 
         [DirectoryProperty("msExchRemoteRecipientType")]
@@ -357,26 +325,17 @@ namespace Kungsbacka.DS
                 {
                     return null;
                 }
-                var value = (string)values[0];
+                string value = (string)values[0];
                 if (value.IndexOf(",CN=Deleted Objects,DC=", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     return null;
                 }
                 return value;
             }
-            set
-            {
-                ExtensionSet("manager", value);
-            }
+            set => ExtensionSet("manager", value);
         }
 
-        public new DateTime? LastPasswordSet
-        {
-            get
-            {
-                return base.LastPasswordSet?.ToLocalTime();
-            }
-        }
+        public new DateTime? LastPasswordSet => base.LastPasswordSet?.ToLocalTime();
 
         [DirectoryProperty("memberOf")]
         public IEnumerable<string> MemberOf
@@ -404,27 +363,15 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("mobile", value);
-            }
+            set => ExtensionSet("mobile", value);
         }
 
-        public bool NonDeliveryReceiptRuleEnabled
-        {
-            get
-            {
-                return MemberOf.Any(t => t.StartsWith("CN=U-exch-ndr-mailbox", StringComparison.OrdinalIgnoreCase));
-            }
-        }
+        public bool NonDeliveryReceiptRuleEnabled => MemberOf.Any(t => t.StartsWith("CN=U-exch-ndr-mailbox", StringComparison.OrdinalIgnoreCase));
 
         [DirectoryProperty("objectCategory")]
         public string ObjectCategory
         {
-            get
-            {
-                return (string)ExtensionGet("objectCategory")[0];
-            }
+            get => (string)ExtensionGet("objectCategory")[0];
             set
             {
                 ExtensionSet("objectCategory", value);
@@ -444,10 +391,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("physicalDeliveryOfficeName", value);
-            }
+            set => ExtensionSet("physicalDeliveryOfficeName", value);
         }
 
         [DirectoryProperty("msDS-cloudExtensionAttribute2")]
@@ -462,10 +406,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("msDS-cloudExtensionAttribute2", value);
-            }
+            set => ExtensionSet("msDS-cloudExtensionAttribute2", value);
         }
 
         [DirectoryProperty("msDS-UserPasswordExpiryTimeComputed")]
@@ -505,8 +446,8 @@ namespace Kungsbacka.DS
             }
             set
             {
-                var addressList = new List<string>(ProxyAddresses);
-                var oldPrimary = PrimarySmtpAddress;
+                List<string> addressList = new List<string>(ProxyAddresses);
+                string oldPrimary = PrimarySmtpAddress;
                 if (!string.IsNullOrEmpty(oldPrimary))
                 {
                     addressList.Remove("SMTP:" + oldPrimary);
@@ -532,7 +473,7 @@ namespace Kungsbacka.DS
         {
             get
             {
-                var addressList = new List<string>(3); // Only a few users have more than 3 secondary addresses
+                List<string> addressList = new List<string>(3); // Only a few users have more than 3 secondary addresses
                 foreach (string address in ProxyAddresses ?? Enumerable.Empty<object>())
                 {
                     if (address.StartsWith("smtp:", StringComparison.Ordinal))
@@ -544,8 +485,8 @@ namespace Kungsbacka.DS
             }
             set
             {
-                var addressList = new List<string>(ProxyAddresses.Except(SecondarySmtpAddresses.Select(t => "smtp:" + t)));
-                foreach (var address in value ?? Enumerable.Empty<string>())
+                List<string> addressList = new List<string>(ProxyAddresses.Except(SecondarySmtpAddresses.Select(t => "smtp:" + t)));
+                foreach (string address in value ?? Enumerable.Empty<string>())
                 {
                     if (address.StartsWith("smtp:", StringComparison.OrdinalIgnoreCase))
                     {
@@ -572,19 +513,10 @@ namespace Kungsbacka.DS
                 }
                 return values.Cast<string>();
             }
-            set
-            {
-                ExtensionSet("proxyAddresses", value.ToArray());
-            }
+            set => ExtensionSet("proxyAddresses", value.ToArray());
         }
 
-        public bool Quarantined
-        {
-            get
-            {
-                return DistinguishedName.IndexOf(",OU=Quarantine,", StringComparison.OrdinalIgnoreCase) > -1;
-            }
-        }
+        public bool Quarantined => DistinguishedName.IndexOf(",OU=Quarantine,", StringComparison.OrdinalIgnoreCase) > -1;
 
         [DirectoryProperty("carLicense")]
         public string ResourceManagerTasks
@@ -598,10 +530,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("carLicense", value);
-            }
+            set => ExtensionSet("carLicense", value);
         }
 
         [DirectoryProperty("msDS-cloudExtensionAttribute14")]
@@ -616,10 +545,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("msDS-cloudExtensionAttribute14", value);
-            }
+            set => ExtensionSet("msDS-cloudExtensionAttribute14", value);
         }
 
         [DirectoryProperty("seeAlso")]
@@ -632,17 +558,14 @@ namespace Kungsbacka.DS
                 {
                     return null;
                 }
-                var value = (string)values[0];
+                string value = (string)values[0];
                 if (value.IndexOf(",CN=Deleted Objects,DC=", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     return null;
                 }
                 return value;
             }
-            set
-            {
-                ExtensionSet("seeAlso", value);
-            }
+            set => ExtensionSet("seeAlso", value);
         }
 
         [DirectoryProperty("msDS-cloudExtensionAttribute1")]
@@ -663,7 +586,7 @@ namespace Kungsbacka.DS
                 Guid[] guids = new Guid[parts.Length];
                 for (int i = 0; i < parts.Length; i++)
                 {
-                    if (System.Guid.TryParse(parts[i], out var guid))
+                    if (System.Guid.TryParse(parts[i], out Guid guid))
                     {
                         guids[i] = guid;
                     }
@@ -709,10 +632,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("targetAddress", value);
-            }
+            set => ExtensionSet("targetAddress", value);
         }
 
         [DirectoryProperty("telephoneNumber")]
@@ -727,10 +647,7 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("telephoneNumber", value);
-            }
+            set => ExtensionSet("telephoneNumber", value);
         }
 
         [DirectoryProperty("title")]
@@ -745,19 +662,10 @@ namespace Kungsbacka.DS
                 }
                 return (string)values[0];
             }
-            set
-            {
-                ExtensionSet("title", value);
-            }
+            set => ExtensionSet("title", value);
         }
 
         [DirectoryProperty("whenCreated")]
-        public DateTime WhenCreated
-        {
-            get
-            {
-                return (DateTime)ExtensionGet("whenCreated")[0];
-            }
-        }
+        public DateTime WhenCreated => (DateTime)ExtensionGet("whenCreated")[0];
     }
 }

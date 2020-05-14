@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Kungsbacka.CommonExtensions;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
-using System.Globalization;
-using Kungsbacka.CommonExtensions;
-using System.Text;
 
 namespace Kungsbacka.DS
 {
@@ -80,8 +78,8 @@ namespace Kungsbacka.DS
     }
     public class AccountNamesFactory
     {
-        readonly Dictionary<string, List<int>> suffixCache;
-        static CultureInfo swedishCulture = CultureInfo.GetCultureInfo("sv-SE");
+        private readonly Dictionary<string, List<int>> suffixCache;
+        private static readonly CultureInfo swedishCulture = CultureInfo.GetCultureInfo("sv-SE");
 
         public AccountNamesFactory()
         {
@@ -244,9 +242,9 @@ namespace Kungsbacka.DS
 
         public AccountNames GetNames(string firstName, string lastName, string upnDomain)
         {
-            return GetNames(firstName,lastName, upnDomain, 
+            return GetNames(firstName, lastName, upnDomain,
                 employeeNumber: null,
-                excludeSam: false, 
+                excludeSam: false,
                 samPrefix: null,
                 linkUpnAndSam: false
             );
@@ -312,7 +310,7 @@ namespace Kungsbacka.DS
             }
             if (!suffixCache.ContainsKey(upn))
             {
-                foreach(ADUser user in DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
+                foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
                 {
                     string foundUpn = user.UserPrincipalName.Split('@')[0];
                     string foundUpnNoSuffix = foundUpn.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
