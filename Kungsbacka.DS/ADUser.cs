@@ -47,7 +47,7 @@ namespace Kungsbacka.DS
             object[] values = ExtensionGet(propertyName);
             if (values.Length == 1)
             {
-                ActiveDs.IADsLargeInteger largeInt = values[0] as ActiveDs.IADsLargeInteger;
+                IADsLargeInteger largeInt = values[0] as IADsLargeInteger;
                 if (largeInt != null)
                 {
                     value = (long)largeInt.HighPart << 32 | (uint)largeInt.LowPart;
@@ -129,19 +129,19 @@ namespace Kungsbacka.DS
             }
         }
 
-        [DirectoryProperty("msDS-cloudExtensionAttribute15")]
+        [DirectoryProperty("ExtensionAttribute15")]
         public string AccountType
         {
             get
             {
-                object[] values = ExtensionGet("msDS-cloudExtensionAttribute15");
+                object[] values = ExtensionGet("ExtensionAttribute15");
                 if (values.Length != 1)
                 {
                     return null;
                 }
                 return (string)values[0];
             }
-            set => ExtensionSet("msDS-cloudExtensionAttribute15", value);
+            set => ExtensionSet("ExtensionAttribute15", value);
         }
 
         [DirectoryProperty("gidNumber")]

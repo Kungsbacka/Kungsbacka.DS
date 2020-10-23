@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Security.Principal;
+using Newtonsoft.Json;
 
 namespace Kungsbacka.DS
 {
@@ -15,7 +16,8 @@ namespace Kungsbacka.DS
         ProxyAddresses,
         AmbiguousNameResolution,
         EmployeeNumber,
-        SeeAlso
+        SeeAlso,
+        Organization
     }
 
     public enum GroupSearchProperty
@@ -98,6 +100,9 @@ namespace Kungsbacka.DS
                     case UserSearchProperty.SeeAlso:
                         qbePrincipal.SeeAlso = searchString;
                         break;
+                    case UserSearchProperty.Organization:
+                        FillOrgSearchQbePrincipal(qbePrincipal, searchString);
+                        break;
                     default:
                         throw new NotImplementedException(searchProperty.ToString());
                 }
@@ -107,6 +112,32 @@ namespace Kungsbacka.DS
                 }
             }
             return list;
+        }
+
+        private static void FillOrgSearchQbePrincipal(ADUser principal, string searchString)
+        {
+            if (string.IsNullOrEmpty(searchString))
+            {
+                throw new ArgumentNullException(nameof(searchString));
+            }
+            string[] parts = searchString.Split('/');
+            if (parts.Length < 1 || parts.Length > 4)
+            {
+                throw new ArgumentException(nameof(searchString), "Not a valid organizational search string");
+            }
+            parts = parts.Select(p => p.Trim()).ToArray();
+            if (!string.IsNullOrEmpty(parts[1]))
+            {
+                principal.Department = parts[1];
+            }
+            if (parts.Length > 2 && !string.IsNullOrEmpty(parts[2]))
+            {
+                principal.Office = parts[2];
+            }
+            if (parts.Length > 3 && !string.IsNullOrEmpty(parts[3]))
+            {
+                principal.Title = parts[3];
+            }
         }
 
         public static IList<ADGroup> SearchGroup(GroupSearchProperty searchProperty, string searchString)
@@ -136,8 +167,7 @@ namespace Kungsbacka.DS
         private static ADLicenseGroup LicenseGroupFromADGroup(ADGroup adGroup)
         {
             string json = adGroup.Location.Substring(8);
-            System.Web.Script.Serialization.JavaScriptSerializer jsonSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-            ADLicenseGroup licenseGroup = jsonSerializer.Deserialize<ADLicenseGroup>(json);
+            ADLicenseGroup licenseGroup = JsonConvert.DeserializeObject<ADLicenseGroup>(json);
             licenseGroup.Guid = (Guid)adGroup.Guid;
             licenseGroup.DistinguishedName = adGroup.DistinguishedName;
             licenseGroup.DisplayName = adGroup.DisplayName;

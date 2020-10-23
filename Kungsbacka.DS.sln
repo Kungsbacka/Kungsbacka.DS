@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kungsbacka.DS", "Kungsbacka.DS\Kungsbacka.DS.csproj", "{27599342-0A56-4CD9-B255-EF5A84138B75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kungsbacka.DS", "Kungsbacka.DS\Kungsbacka.DS.csproj", "{7227DBA8-1198-4960-8011-504161765F8A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kungsbacka.CommonExtensions", "..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj", "{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kungsbacka.DS.UnitTests", "Kungsbacka.DS.Tests\Kungsbacka.DS.UnitTests.csproj", "{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kungsbacka.CommonExtensions", "..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj", "{5BEE8AB1-AE71-471B-9CB9-7D3FBDC2BC27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,20 +15,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{27599342-0A56-4CD9-B255-EF5A84138B75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27599342-0A56-4CD9-B255-EF5A84138B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27599342-0A56-4CD9-B255-EF5A84138B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27599342-0A56-4CD9-B255-EF5A84138B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7227DBA8-1198-4960-8011-504161765F8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7227DBA8-1198-4960-8011-504161765F8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7227DBA8-1198-4960-8011-504161765F8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7227DBA8-1198-4960-8011-504161765F8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5BEE8AB1-AE71-471B-9CB9-7D3FBDC2BC27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5BEE8AB1-AE71-471B-9CB9-7D3FBDC2BC27}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5BEE8AB1-AE71-471B-9CB9-7D3FBDC2BC27}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5BEE8AB1-AE71-471B-9CB9-7D3FBDC2BC27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EEB59827-86F5-4AD5-9346-0EFEC8FAE428}
 	EndGlobalSection
 EndGlobal

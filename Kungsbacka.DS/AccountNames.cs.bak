@@ -54,7 +54,7 @@ namespace Kungsbacka.DS
      *   
      *   Important to note is that suffixes are cached to minimize searches in
      *   Active Directory when creating users in bulk. This introduces a risk
-     *   for collisions when creating multiple accounts using the same factory
+     *   for collisions when creating multiple accounts with the same factory
      *   object.
      */
 
