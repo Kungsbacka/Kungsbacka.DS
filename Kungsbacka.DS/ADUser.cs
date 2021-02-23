@@ -47,10 +47,9 @@ namespace Kungsbacka.DS
             object[] values = ExtensionGet(propertyName);
             if (values.Length == 1)
             {
-                IADsLargeInteger largeInt = values[0] as IADsLargeInteger;
-                if (largeInt != null)
+                if (values[0] is IADsLargeInteger largeInt)
                 {
-                    value = (long)largeInt.HighPart << 32 | (uint)largeInt.LowPart;
+                    value = largeInt.HighPart << 32 | (uint)largeInt.LowPart;
                     return true;
                 }
             }
@@ -116,7 +115,6 @@ namespace Kungsbacka.DS
                 int pos = dn.IndexOf(",OU=", StringComparison.OrdinalIgnoreCase);
                 dn = dn.Substring(pos + 1, dn.Length - pos - 17);
                 int start = dn.Length - 1;
-                pos = -1;
                 string location = "";
                 do
                 {
@@ -265,6 +263,21 @@ namespace Kungsbacka.DS
             set => ExtensionSet("employeeType", value);
         }
 
+        [DirectoryProperty("wWWHomePage")]
+        public string HomePage
+        {
+            get
+            {
+                object[] values = ExtensionGet("wWWHomePage");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set => ExtensionSet("wWWHomePage", value);
+        }
+
         [DirectoryProperty("initials")]
         public string Initials
         {
@@ -287,7 +300,7 @@ namespace Kungsbacka.DS
         {
             get
             {
-                if (TryGetSingleValuedStringProperty("mailNickname", out string mailNickname) &&
+                if (TryGetSingleValuedStringProperty("mailNickname", out _) &&
                     TryGetLargeIntegerProperty("msExchRemoteRecipientType", out long remoteRecipientType) &&
                     TryGetLargeIntegerProperty("msExchRecipientTypeDetails", out long recipientTypeDetails))
                 {
