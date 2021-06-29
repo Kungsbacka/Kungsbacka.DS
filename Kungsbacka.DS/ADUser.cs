@@ -311,20 +311,15 @@ namespace Kungsbacka.DS
             }
         }
 
-        public bool? Managed
+        public bool Managed
         {
             get
             {
-                // If enabled is null, this is most likely a new account that is not saved
-                // to Active Directory and we cannot tell if it's managed or not.
-                if (Enabled == null)
-                {
-                    return null;
-                }
-                return (bool)Enabled
-                    && !string.IsNullOrEmpty(EmployeeNumber)
-                    && AccountProcessingRules != null
-                    && AccountProcessingRules > 0;
+                return Enabled.HasValue
+                    && Enabled.Value
+                    && AccountProcessingRules.HasValue
+                    && AccountProcessingRules > 0
+                    && EmployeeNumber != null;
             }
         }
 
