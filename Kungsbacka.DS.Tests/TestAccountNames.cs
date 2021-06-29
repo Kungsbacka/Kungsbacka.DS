@@ -102,6 +102,18 @@ namespace Kungsbacka.DS.UnitTests
         }
 
         [TestMethod]
+        public void TestGetNextAvailableSuffixWithPrimedCaceh()
+        {
+            var an = new AccountNamesFactory(new string[] { "a", "a2", "b", "b3", "d", "e@x.y", "e2@x.y"});
+            Assert.AreEqual(an.GetNextAvailableSuffix("a"), 3, "a");
+            Assert.AreEqual(an.GetNextAvailableSuffix("b"), 2, "b");
+            Assert.AreEqual(an.GetNextAvailableSuffix("c"), -1, "c");
+            Assert.AreEqual(an.GetNextAvailableSuffix("d"), 2, "d");
+            Assert.AreEqual(an.GetNextAvailableSuffix("e"), 3, "e");
+        }
+
+
+        [TestMethod]
         public void TestGetAccountNames1()
         {
             var an = new AccountNamesFactory();

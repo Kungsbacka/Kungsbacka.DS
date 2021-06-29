@@ -86,6 +86,23 @@ namespace Kungsbacka.DS
             suffixCache = new Dictionary<string, List<int>>();
         }
 
+        public AccountNamesFactory(IEnumerable<string> names)
+        {
+            suffixCache = new Dictionary<string, List<int>>();
+            foreach (string name in names)
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+                // If no @ is found, the whole string is returned as index 0
+                string key = name.Split('@')[0];
+                int suffix = key.GetNumberSuffix();
+                key = key.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
+                CacheSuffix(key, suffix);
+            }
+        }
+
         public static string GetName(string name)
         {
             if (string.IsNullOrEmpty(name))
