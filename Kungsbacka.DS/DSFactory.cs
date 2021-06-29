@@ -121,7 +121,7 @@ namespace Kungsbacka.DS
                 throw new ArgumentNullException(nameof(searchString));
             }
             string[] parts = searchString.Split('/');
-            if (parts.Length < 1 || parts.Length > 4)
+            if (parts.Length < 2 || parts.Length > 4)
             {
                 throw new ArgumentException(nameof(searchString), "Not a valid organizational search string");
             }
