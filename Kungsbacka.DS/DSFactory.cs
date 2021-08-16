@@ -29,8 +29,6 @@ namespace Kungsbacka.DS
     public static class DSFactory
     {
         private static PrincipalContext principalContext;
-        // private static DirectoryEntry
-
 
         public static PrincipalContext PrincipalContext
         {
@@ -187,6 +185,16 @@ namespace Kungsbacka.DS
         public static IList<ADLicenseGroup> GetLicenseGroups()
         {
             return GetLicenseGroups(false);
+        }
+
+        public static ADLicenseGroup GetLicenseGroup(Guid guid)
+        {
+            ADGroup group = ADGroup.FindByIdentity(PrincipalContext, IdentityType.Guid, guid.ToString());
+            if (group != null)
+            {
+                return LicenseGroupFromADGroup(group);
+            }
+            return null;
         }
 
         public static ADUser FindUserByDistinguishedName(string distinguishedName)
