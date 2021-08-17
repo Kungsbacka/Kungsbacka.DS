@@ -187,6 +187,17 @@ namespace Kungsbacka.DS
             return GetLicenseGroups(false);
         }
 
+        public static ADLicenseGroup GetLicenseGroup(string dn)
+        {
+            ADGroup group = ADGroup.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, dn);
+            if (group != null)
+            {
+                return LicenseGroupFromADGroup(group);
+            }
+            return null;
+        }
+
+
         public static ADLicenseGroup GetLicenseGroup(Guid guid)
         {
             ADGroup group = ADGroup.FindByIdentity(PrincipalContext, IdentityType.Guid, guid.ToString());
