@@ -10,7 +10,6 @@ namespace Kungsbacka.DS.UnitTests
         [TestMethod]
         public void TestGetSamAccountName()
         {
-            var an = new AccountNamesFactory();
             Assert.AreEqual("givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname"));
             Assert.AreEqual("givsur", AccountNamesFactory.GetSamAccountName("Givénname", "Sürname"));
             Assert.AreEqual("00givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname", "000000000000"));
@@ -20,9 +19,10 @@ namespace Kungsbacka.DS.UnitTests
         [TestMethod]
         public void TestGetUpnNamePart()
         {
-            var an = new AccountNamesFactory();
             Assert.AreEqual("givenname.surname", AccountNamesFactory.GetUpnNamePart("Givenname", "Surname"));
-            Assert.AreEqual("givenname.surnamea-surnameb", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA SurnameB"));
+            Assert.AreEqual("givenname.surnamea.surnameb", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA SurnameB"));
+            Assert.AreEqual("givennamea.givennameb.surname", AccountNamesFactory.GetUpnNamePart("GivennameA GivennameB", "Surname"));
+            Assert.AreEqual("givenname.surnamea-surnameb.surnamec", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA-SurnameB..SurnameC"));
             Assert.AreEqual("given.su", AccountNamesFactory.GetUpnNamePart("Givén", "Su"));
             Assert.AreEqual("-a-.b", AccountNamesFactory.GetUpnNamePart("--a--", " b123 "));
         }
@@ -47,7 +47,6 @@ namespace Kungsbacka.DS.UnitTests
         [TestMethod]
         public void TestGetDisplayName()
         {
-            var an = new AccountNamesFactory();
             Assert.AreEqual("Givenname Surname", AccountNamesFactory.GetDisplayName("Givenname", "Surname"));
             Assert.AreEqual("Givénname Sürname", AccountNamesFactory.GetDisplayName("Givénname ", " Sürname"));
             Assert.AreEqual("Given-Name SurnameA SurnameB", AccountNamesFactory.GetDisplayName("Given-Name", "SurnameA   SurnameB"));

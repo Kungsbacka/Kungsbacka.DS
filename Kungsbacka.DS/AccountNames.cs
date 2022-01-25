@@ -155,12 +155,13 @@ namespace Kungsbacka.DS
                     str
                         .Trim()
                         .RemoveDiacritic()
+                        .Replace('.', ' ')
                         .RemoveRepeating(new char[] { ' ', '-' })
                         .ToLower(swedishCulture)
                         .Replace('ø', 'o')
                         .Replace('æ', 'a')
-                        .Replace(' ', '-'),
-                    "[^a-z-]", "");
+                        .Replace(' ', '.'),
+                    "[^a-z-.]", "");
             }
             return clean(firstName) + "." + clean(lastName);
         }
