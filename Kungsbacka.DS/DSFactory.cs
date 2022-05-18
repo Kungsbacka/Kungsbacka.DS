@@ -62,8 +62,14 @@ namespace Kungsbacka.DS
 
         public static PrincipalContext CreatePrincipalContext(string userName, string password)
         {
-            return new PrincipalContext(ContextType.Domain, null, userName, password);
+            return new PrincipalContext(ContextType.Domain, null, null, ContextOptions.Negotiate | ContextOptions.Sealing, userName, password);
         }
+
+        public static PrincipalContext CreatePrincipalContext(string container, string userName, string password)
+        {
+            return new PrincipalContext(ContextType.Domain, null, container, ContextOptions.Negotiate | ContextOptions.Sealing, userName, password);
+        }
+
 
         public static IList<ADUser> SearchUser(UserSearchProperty searchProperty, string searchString)
         {
