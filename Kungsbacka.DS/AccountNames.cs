@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
 
@@ -264,7 +265,8 @@ namespace Kungsbacka.DS
                 employeeNumber: null,
                 excludeSam: false,
                 samPrefix: null,
-                linkUpnAndSam: false
+                linkUpnAndSam: false,
+                existingUserSam: null
             );
         }
 
@@ -273,7 +275,8 @@ namespace Kungsbacka.DS
             return GetNames(firstName, lastName, upnDomain, employeeNumber,
                 excludeSam: false,
                 samPrefix: null,
-                linkUpnAndSam: false
+                linkUpnAndSam: false,
+                existingUserSam: null
             );
         }
 
@@ -283,7 +286,8 @@ namespace Kungsbacka.DS
                 employeeNumber: null,
                 excludeSam: excludeSam,
                 samPrefix: null,
-                linkUpnAndSam: false
+                linkUpnAndSam: false,
+                existingUserSam: null
             );
         }
 
@@ -291,11 +295,12 @@ namespace Kungsbacka.DS
         {
             return GetNames(firstName, lastName, upnDomain, employeeNumber, excludeSam,
                 samPrefix: null,
-                linkUpnAndSam: false
+                linkUpnAndSam: false,
+                existingUserSam: null
             );
         }
 
-        public AccountNames GetNames(string firstName, string lastName, string upnDomain, string employeeNumber, bool excludeSam, string samPrefix, bool linkUpnAndSam)
+        public AccountNames GetNames(string firstName, string lastName, string upnDomain, string employeeNumber, bool excludeSam, string samPrefix, bool linkUpnAndSam, string existingUserSam)
         {
             upnDomain = upnDomain.TrimStart('@');
             string sam = GetSamAccountName(firstName, lastName, employeeNumber);
@@ -310,6 +315,11 @@ namespace Kungsbacka.DS
             }
             string cn = GetCommonName(firstName, lastName);
             string cnWithoutDiacritics = cn.RemoveDiacritic();
+            ADUser existingUser = null;
+            if (!string.IsNullOrEmpty(existingUserSam))
+            {
+                existingUser = DSFactory.FindUserBySamAccountName(existingUserSam);
+            }
             if (!excludeSam)
             {
                 if (!suffixCache.ContainsKey(sam))
@@ -317,6 +327,10 @@ namespace Kungsbacka.DS
                     foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.SamAccountName, Invariant($"{sam}*")))
                     {
                         string foundSam = user.SamAccountName;
+                        if (existingUser != null && foundSam.Equals(existingUser.SamAccountName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
                         string foundSamNoSuffix = foundSam.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
                         if (foundSamNoSuffix.Equals(sam, StringComparison.OrdinalIgnoreCase))
                         {
@@ -330,6 +344,10 @@ namespace Kungsbacka.DS
             {
                 foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, Invariant($"{upn}*@{upnDomain}")))
                 {
+                    if (existingUser != null && user.UserPrincipalName.Equals(existingUser.UserPrincipalName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
                     string foundUpn = user.UserPrincipalName.Split('@')[0];
                     string foundUpnNoSuffix = foundUpn.TrimEnd(new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
                     if (foundUpnNoSuffix.Equals(upn, StringComparison.OrdinalIgnoreCase))
@@ -362,6 +380,13 @@ namespace Kungsbacka.DS
             {
                 foreach (ADUser user in DSFactory.SearchUser(UserSearchProperty.CommonName, Invariant($"{cn}*")))
                 {
+                    if (existingUser != null)
+                    {
+                        if (user.Name.Equals(existingUser.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
                     // You can not have two accounts with common names that only differ by diactitics.
                     // AD considers the common names "Anders Öst" and "Anders Ost" as equal. That is why
                     // diacritics has to be removed before comparison.
