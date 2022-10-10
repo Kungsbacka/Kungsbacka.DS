@@ -182,6 +182,21 @@ namespace Kungsbacka.DS
             set => ExtensionSet("anr", value);
         }
 
+        [DirectoryProperty("company")]
+        public string Company
+        {
+            get
+            {
+                object[] values = ExtensionGet("company");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set => ExtensionSet("company", value);
+        }
+
         public int DaysBeforeNextPasswordChange
         {
             get
