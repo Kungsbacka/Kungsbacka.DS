@@ -233,5 +233,10 @@ namespace Kungsbacka.DS
         {
             return ADGroup.FindByIdentity(PrincipalContext, IdentityType.DistinguishedName, distinguishedName);
         }
+
+        public static ADGroup FindGroupBySamAccountName(string samAccountName)
+        {
+            return ADGroup.FindByIdentity(PrincipalContext, IdentityType.SamAccountName, samAccountName);
+        }
     }
 }
