@@ -33,9 +33,9 @@ namespace Kungsbacka.DS
         {
             value = null;
             object[] values = ExtensionGet(propertyName);
-            if (values.Length == 1)
+            if (values.Length == 1 && values[0] is string str)
             {
-                value = values[0] as string;
+                value = str;
                 return true;
             }
             return false;
@@ -45,13 +45,10 @@ namespace Kungsbacka.DS
         {
             value = 0;
             object[] values = ExtensionGet(propertyName);
-            if (values.Length == 1)
+            if (values.Length == 1 && values[0] is IADsLargeInteger largeInt)
             {
-                if (values[0] is IADsLargeInteger largeInt)
-                {
-                    value = largeInt.HighPart << 32 | (uint)largeInt.LowPart;
-                    return true;
-                }
+                value = largeInt.HighPart << 32 | (uint)largeInt.LowPart;
+                return true;
             }
             return false;
         }
@@ -497,7 +494,7 @@ namespace Kungsbacka.DS
             get
             {
                 List<string> addressList = new List<string>(3); // Only a few users have more than 3 secondary addresses
-                foreach (string address in ProxyAddresses ?? Enumerable.Empty<object>())
+                foreach (string address in (ProxyAddresses ?? Enumerable.Empty<object>()).Cast<string>())
                 {
                     if (address.StartsWith("smtp:", StringComparison.Ordinal))
                     {
