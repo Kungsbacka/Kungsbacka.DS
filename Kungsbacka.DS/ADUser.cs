@@ -6,12 +6,13 @@ using System.Linq;
 
 namespace Kungsbacka.DS
 {
-    [Flags]
-    public enum AccountProcessingRules
+    public enum AccountSource
     {
         None = 0,
-        SourcedFromPersonalsystem = 1,
-        SourcedFromElevregister = 2
+        Personec = 1,
+        Ereg = 2,
+        Alvis = 3,
+        Combine = 4
     };
 
     [DirectoryRdnPrefix("CN")]
@@ -160,6 +161,41 @@ namespace Kungsbacka.DS
                 else
                 {
                     ExtensionSet("gidNumber", value);
+                }
+            }
+        }
+
+        [DirectoryProperty("gidNumber")]
+        public AccountSource AccountSource
+        {
+            get
+            {
+                object[] values = ExtensionGet("gidNumber");
+                if (values.Length != 1 || values[0] == null)
+                {
+                    return AccountSource.None;
+                }
+                return (AccountSource)((int)values[0] & 15);
+            }
+            set
+            {
+                object[] values = ExtensionGet("gidNumber");
+                int currentValue = 0;
+                if (values.Length == 1)
+                {
+                    currentValue = (int)values[0];
+                }
+                // Mask out account source bits (lowest 5 bits). We
+                // also mask the sign bit since this is should never
+                // be used for any account processing rules.
+                int newValue = (currentValue & 2147483616) | (int)value;
+                if (newValue != 0)
+                {
+                    ExtensionSet("gidNumber", newValue);
+                }
+                else
+                {
+                    ExtensionSet("gidNumber", null);
                 }
             }
         }
