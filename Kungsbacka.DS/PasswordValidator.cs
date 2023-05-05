@@ -12,26 +12,10 @@ namespace Kungsbacka.DS
                 return false;
             }
             int complexity = 0;
-            if (Regex.IsMatch(password, "[a-z]"))
-            {
-                complexity++;
-            }
-
-            if (Regex.IsMatch(password, "[A-Z]"))
-            {
-                complexity++;
-            }
-
-            if (Regex.IsMatch(password, "[0-9]"))
-            {
-                complexity++;
-            }
-
-            if (Regex.IsMatch(password, "[^a-zA-Z0-9]"))
-            {
-                complexity++;
-            }
-
+            complexity += Regex.IsMatch(password, "[a-z]") ? 1 : 0;
+            complexity += Regex.IsMatch(password, "[A-Z]") ? 1 : 0;
+            complexity += Regex.IsMatch(password, "[0-9]") ? 1 : 0;
+            complexity += Regex.IsMatch(password, "[^a-zA-Z0-9]") ? 1 : 0;
             if (!string.IsNullOrEmpty(displayName))
             {
                 string[] parts = Regex.Split(displayName, @"[^\w]");
