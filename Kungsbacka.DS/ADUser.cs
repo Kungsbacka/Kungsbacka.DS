@@ -254,6 +254,21 @@ namespace Kungsbacka.DS
             set => ExtensionSet("department", value);
         }
 
+        [DirectoryProperty("departmentNumber")]
+        public string DepartmentNumber
+        {
+            get
+            {
+                object[] values = ExtensionGet("departmentNumber");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set => ExtensionSet("departmentNumber", value);
+        }
+
         [DirectoryProperty("employeeNumber")]
         public string EmployeeNumber
         {
@@ -555,6 +570,21 @@ namespace Kungsbacka.DS
                 }
                 ProxyAddresses = addressList;
             }
+        }
+
+        [DirectoryProperty("msDS-cloudExtensionAttribute9")]
+        public string SchoolUnitCode
+        {
+            get
+            {
+                object[] values = ExtensionGet("msDS-cloudExtensionAttribute9");
+                if (values.Length != 1)
+                {
+                    return null;
+                }
+                return (string)values[0];
+            }
+            set => ExtensionSet("msDS-cloudExtensionAttribute9", value);
         }
 
         [DirectoryProperty("proxyAddresses")]
