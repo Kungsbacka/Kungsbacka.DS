@@ -1,33 +1,31 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+using System;
+using Xunit;
 
 namespace Kungsbacka.DS.UnitTests
 {
-    [TestClass]
     public class TestAccountNames
     {
-        [TestMethod]
+        [Fact]
         public void TestGetSamAccountName()
         {
-            Assert.AreEqual("givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname"));
-            Assert.AreEqual("givsur", AccountNamesFactory.GetSamAccountName("Givénname", "Sürname"));
-            Assert.AreEqual("00givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname", "000000000000"));
-            Assert.AreEqual("ab", AccountNamesFactory.GetSamAccountName("--a--", " b123 "));
+            Assert.Equal("givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname"));
+            Assert.Equal("givsur", AccountNamesFactory.GetSamAccountName("Givénname", "Sürname"));
+            Assert.Equal("00givsur", AccountNamesFactory.GetSamAccountName("Givenname", "Surname", "000000000000"));
+            Assert.Equal("ab", AccountNamesFactory.GetSamAccountName("--a--", " b123 "));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetUpnNamePart()
         {
-            Assert.AreEqual("givenname.surname", AccountNamesFactory.GetUpnNamePart("Givenname", "Surname"));
-            Assert.AreEqual("givenname.surnamea.surnameb", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA SurnameB"));
-            Assert.AreEqual("givennamea.givennameb.surname", AccountNamesFactory.GetUpnNamePart("GivennameA GivennameB", "Surname"));
-            Assert.AreEqual("givenname.surnamea-surnameb.surnamec", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA-SurnameB..SurnameC"));
-            Assert.AreEqual("given.su", AccountNamesFactory.GetUpnNamePart("Givén", "Su"));
-            Assert.AreEqual("-a-.b", AccountNamesFactory.GetUpnNamePart("--a--", " b123 "));
+            Assert.Equal("givenname.surname", AccountNamesFactory.GetUpnNamePart("Givenname", "Surname"));
+            Assert.Equal("givenname.surnamea.surnameb", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA SurnameB"));
+            Assert.Equal("givennamea.givennameb.surname", AccountNamesFactory.GetUpnNamePart("GivennameA GivennameB", "Surname"));
+            Assert.Equal("givenname.surnamea-surnameb.surnamec", AccountNamesFactory.GetUpnNamePart("Givenname", "SurnameA-SurnameB..SurnameC"));
+            Assert.Equal("given.su", AccountNamesFactory.GetUpnNamePart("Givén", "Su"));
+            Assert.Equal("-a-.b", AccountNamesFactory.GetUpnNamePart("--a--", " b123 "));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetName()
         {
             Tuple<string, string>[] list = new Tuple<string, string>[] {
@@ -40,20 +38,19 @@ namespace Kungsbacka.DS.UnitTests
             };
             foreach (var tuple in list)
             {
-                Assert.AreEqual(tuple.Item1, AccountNamesFactory.GetName(tuple.Item2));
+                Assert.Equal(tuple.Item1, AccountNamesFactory.GetName(tuple.Item2));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetDisplayName()
         {
-            Assert.AreEqual("Givenname Surname", AccountNamesFactory.GetDisplayName("Givenname", "Surname"));
-            Assert.AreEqual("Givénname Sürname", AccountNamesFactory.GetDisplayName("Givénname ", " Sürname"));
-            Assert.AreEqual("Given-Name SurnameA SurnameB", AccountNamesFactory.GetDisplayName("Given-Name", "SurnameA   SurnameB"));
-
+            Assert.Equal("Givenname Surname", AccountNamesFactory.GetDisplayName("Givenname", "Surname"));
+            Assert.Equal("Givénname Sürname", AccountNamesFactory.GetDisplayName("Givénname ", " Sürname"));
+            Assert.Equal("Given-Name SurnameA SurnameB", AccountNamesFactory.GetDisplayName("Given-Name", "SurnameA   SurnameB"));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetNextAvailableSuffix()
         {
             var an = new AccountNamesFactory();
@@ -86,96 +83,94 @@ namespace Kungsbacka.DS.UnitTests
             an.CacheSuffix("k", 4);
             an.CacheSuffix("k", 3);
             an.CacheSuffix("k", 25);
-            Assert.AreEqual(an.GetNextAvailableSuffix("a"), 2, "a");
-            Assert.AreEqual(an.GetNextAvailableSuffix("b"), 2, "b");
-            Assert.AreEqual(an.GetNextAvailableSuffix("c"), -1, "c");
-            Assert.AreEqual(an.GetNextAvailableSuffix("d"), 3, "d");
-            Assert.AreEqual(an.GetNextAvailableSuffix("e"), -1, "e");
-            Assert.AreEqual(an.GetNextAvailableSuffix("f"), -1, "f");
-            Assert.AreEqual(an.GetNextAvailableSuffix("g"), 2, "g");
-            Assert.AreEqual(an.GetNextAvailableSuffix("h"), -1, "h");
-            Assert.AreEqual(an.GetNextAvailableSuffix("i"), 2, "i");
-            Assert.AreEqual(an.GetNextAvailableSuffix("j", 7), 7, "j7");
-            Assert.AreEqual(an.GetNextAvailableSuffix("j", 5), 6, "j5");
-            Assert.AreEqual(an.GetNextAvailableSuffix("k"), 6, "k");
+            Assert.Equal(2, an.GetNextAvailableSuffix("a"));    // a
+            Assert.Equal(2, an.GetNextAvailableSuffix("b"));    // b
+            Assert.Equal(-1, an.GetNextAvailableSuffix("c"));   // c
+            Assert.Equal(3, an.GetNextAvailableSuffix("d"));    // d
+            Assert.Equal(-1, an.GetNextAvailableSuffix("e"));   // e
+            Assert.Equal(-1, an.GetNextAvailableSuffix("f"));   // f
+            Assert.Equal(2, an.GetNextAvailableSuffix("g"));    // g
+            Assert.Equal(-1, an.GetNextAvailableSuffix("h"));   // h
+            Assert.Equal(2, an.GetNextAvailableSuffix("i"));    // i
+            Assert.Equal(7, an.GetNextAvailableSuffix("j", 7)); // j7
+            Assert.Equal(6, an.GetNextAvailableSuffix("j", 5)); // j5
+            Assert.Equal(6, an.GetNextAvailableSuffix("k"));    // k
         }
 
-        [TestMethod]
-        public void TestGetNextAvailableSuffixWithPrimedCaceh()
+        [Fact]
+        public void TestGetNextAvailableSuffixWithPrimedCache()
         {
-            var an = new AccountNamesFactory(new string[] { "a", "a2", "b", "b3", "d", "e@x.y", "e2@x.y"});
-            Assert.AreEqual(an.GetNextAvailableSuffix("a"), 3, "a");
-            Assert.AreEqual(an.GetNextAvailableSuffix("b"), 2, "b");
-            Assert.AreEqual(an.GetNextAvailableSuffix("c"), -1, "c");
-            Assert.AreEqual(an.GetNextAvailableSuffix("d"), 2, "d");
-            Assert.AreEqual(an.GetNextAvailableSuffix("e"), 3, "e");
+            var an = new AccountNamesFactory(new string[] { "a", "a2", "b", "b3", "d", "e@x.y", "e2@x.y" });
+            Assert.Equal(3, an.GetNextAvailableSuffix("a"));
+            Assert.Equal(2, an.GetNextAvailableSuffix("b"));
+            Assert.Equal(-1, an.GetNextAvailableSuffix("c"));
+            Assert.Equal(2, an.GetNextAvailableSuffix("d"));
+            Assert.Equal(3, an.GetNextAvailableSuffix("e"));
         }
 
-
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames1()
         {
             var an = new AccountNamesFactory();
             var names = an.GetNames("Unique", "Name", "example.com", "199700000000");
             var list = DSFactory.SearchUser(UserSearchProperty.SamAccountName, names.SamAccountName);
-            Assert.AreEqual(0, list.Count);
+            Assert.Empty(list);
             list = DSFactory.SearchUser(UserSearchProperty.UserPrincipalName, names.UserPrincipalName);
-            Assert.AreEqual(0, list.Count);
+            Assert.Empty(list);
             list = DSFactory.SearchUser(UserSearchProperty.CommonName, names.CommonName);
-            Assert.AreEqual(0, list.Count);
+            Assert.Empty(list);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames2()
         {
             var an = new AccountNamesFactory();
             var names = an.GetNames("Unique", "Name", "example.com");
-            Assert.AreEqual("uninam", names.SamAccountName);
-            Assert.AreEqual("unique.name@example.com", names.UserPrincipalName);
-            Assert.AreEqual("Unique Name", names.CommonName);
+            Assert.Equal("uninam", names.SamAccountName);
+            Assert.Equal("unique.name@example.com", names.UserPrincipalName);
+            Assert.Equal("Unique Name", names.CommonName);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames3()
         {
             var an = new AccountNamesFactory();
             var names = an.GetNames("Unique", "Name", "example.com", "1234");
-            Assert.AreEqual(names.UserPrincipalName, "unique.name@example.com");
+            Assert.Equal("unique.name@example.com", names.UserPrincipalName);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames4()
         {
             var an = new AccountNamesFactory();
             var names = an.GetNames("Unique", "Name", "example.com", false);
-            Assert.AreEqual(names.UserPrincipalName, "unique.name@example.com");
-            Assert.AreEqual(names.SamAccountName, "uninam");
-            Assert.AreEqual(names.CommonName, "Unique Name");
+            Assert.Equal("unique.name@example.com", names.UserPrincipalName);
+            Assert.Equal("uninam", names.SamAccountName);
+            Assert.Equal("Unique Name", names.CommonName);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames5()
         {
             var an = new AccountNamesFactory();
             var names1 = an.GetNames("First", "Last", "example.com", "199001010101");
             var names2 = an.GetNames("First", "Last", "example.com", "199001010101");
             var names3 = an.GetNames("First", "Last", "example.com", "199001010101");
-            Assert.AreNotEqual(names1.SamAccountName, names2.SamAccountName);
-            Assert.AreNotEqual(names1.SamAccountName, names3.SamAccountName);
-            Assert.AreNotEqual(names2.SamAccountName, names3.SamAccountName);
+            Assert.NotEqual(names1.SamAccountName, names2.SamAccountName);
+            Assert.NotEqual(names1.SamAccountName, names3.SamAccountName);
+            Assert.NotEqual(names2.SamAccountName, names3.SamAccountName);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGetAccountNames6()
         {
             var an = new AccountNamesFactory();
             var names1 = an.GetNames("First", "Last", "example.com", "199001010101", true);
             var names2 = an.GetNames("First", "Last", "example.com", "199001010101", true);
             var names3 = an.GetNames("First", "Last", "example.com", "199001010101", true);
-            Assert.AreNotEqual(names1.UserPrincipalName, names2.UserPrincipalName);
-            Assert.AreNotEqual(names1.UserPrincipalName, names3.UserPrincipalName);
-            Assert.AreNotEqual(names2.UserPrincipalName, names3.UserPrincipalName);
+            Assert.NotEqual(names1.UserPrincipalName, names2.UserPrincipalName);
+            Assert.NotEqual(names1.UserPrincipalName, names3.UserPrincipalName);
+            Assert.NotEqual(names2.UserPrincipalName, names3.UserPrincipalName);
         }
-
     }
 }

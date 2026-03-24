@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kungsbacka.DS", "Kungsbacka
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kungsbacka.CommonExtensions", "..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj", "{35A578A7-C1D5-4253-A5F8-D2A3D3CFF7D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kungsbacka.DS.UnitTests", "Kungsbacka.DS.Tests\Kungsbacka.DS.UnitTests.csproj", "{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kungsbacka.DS.Tests", "Kungsbacka.DS.Tests\Kungsbacka.DS.Tests.csproj", "{87CCBF9F-61CB-4BC7-9CCC-CDE2EB12F479}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
