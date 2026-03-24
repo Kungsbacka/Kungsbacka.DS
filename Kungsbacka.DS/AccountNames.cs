@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
 
@@ -77,6 +76,7 @@ namespace Kungsbacka.DS
             DisplayName = displayName;
         }
     }
+
     public class AccountNamesFactory
     {
         private readonly Dictionary<string, List<int>> suffixCache;

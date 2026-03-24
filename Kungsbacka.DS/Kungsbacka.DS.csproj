@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <!-- Kungsbacka.DS uses System.DirectoryServices and System.DirectoryServices.AccountManagement which are Windows only. -->
+    <!-- Currently targeting .NET 9 to be compatible with PowerShell 7.5 -->
+    <TargetFrameworks>netstandard2.0-windows;net9.0-windows</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
 
 </Project>
