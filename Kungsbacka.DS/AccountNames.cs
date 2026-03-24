@@ -261,7 +261,10 @@ namespace Kungsbacka.DS
 
         public AccountNames GetNames(string firstName, string lastName, string upnDomain)
         {
-            return GetNames(firstName, lastName, upnDomain,
+            return GetNames(
+                firstName,
+                lastName,
+                upnDomain,
                 employeeNumber: null,
                 excludeSam: false,
                 samPrefix: null,
@@ -272,7 +275,11 @@ namespace Kungsbacka.DS
 
         public AccountNames GetNames(string firstName, string lastName, string upnDomain, string employeeNumber)
         {
-            return GetNames(firstName, lastName, upnDomain, employeeNumber,
+            return GetNames(
+                firstName,
+                lastName,
+                upnDomain,
+                employeeNumber,
                 excludeSam: false,
                 samPrefix: null,
                 linkUpnAndSam: false,
@@ -282,9 +289,12 @@ namespace Kungsbacka.DS
 
         public AccountNames GetNames(string firstName, string lastName, string upnDomain, bool excludeSam)
         {
-            return GetNames(firstName, lastName, upnDomain,
+            return GetNames(
+                firstName,
+                lastName,
+                upnDomain,
                 employeeNumber: null,
-                excludeSam: excludeSam,
+                excludeSam,
                 samPrefix: null,
                 linkUpnAndSam: false,
                 existingUserSam: null
@@ -293,9 +303,28 @@ namespace Kungsbacka.DS
 
         public AccountNames GetNames(string firstName, string lastName, string upnDomain, string employeeNumber, bool excludeSam)
         {
-            return GetNames(firstName, lastName, upnDomain, employeeNumber, excludeSam,
+            return GetNames(
+                firstName,
+                lastName,
+                upnDomain,
+                employeeNumber,
+                excludeSam,
                 samPrefix: null,
                 linkUpnAndSam: false,
+                existingUserSam: null
+            );
+        }
+
+        public AccountNames GetNames(string firstName, string lastName, string upnDomain, string employeeNumber, bool excludeSam, string samPrefix, bool linkUpnAndSam)
+        {
+            return GetNames(
+                firstName,
+                lastName,
+                upnDomain,
+                employeeNumber,
+                excludeSam,
+                samPrefix,
+                linkUpnAndSam,
                 existingUserSam: null
             );
         }
