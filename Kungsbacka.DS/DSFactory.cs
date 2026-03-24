@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿// using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Security.Principal;
+using System.Text.Json;
 
 namespace Kungsbacka.DS
 {
@@ -29,6 +30,11 @@ namespace Kungsbacka.DS
     public static class DSFactory
     {
         private static PrincipalContext principalContext;
+        private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true,
+        };
+
 
         public static PrincipalContext PrincipalContext
         {
@@ -171,7 +177,7 @@ namespace Kungsbacka.DS
         private static ADLicenseGroup LicenseGroupFromADGroup(ADGroup adGroup)
         {
             string json = adGroup.Location.Substring(8);
-            ADLicenseGroup licenseGroup = JsonConvert.DeserializeObject<ADLicenseGroup>(json);
+            ADLicenseGroup licenseGroup = JsonSerializer.Deserialize<ADLicenseGroup>(json, jsonSerializerOptions);
             licenseGroup.Guid = (Guid)adGroup.Guid;
             licenseGroup.DistinguishedName = adGroup.DistinguishedName;
             licenseGroup.DisplayName = adGroup.DisplayName;

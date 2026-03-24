@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,9 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.DirectoryServices" Version="8.0.0" />
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
+    <PackageReference Include="System.DirectoryServices" Version="10.0.5" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.5" />
+    <PackageReference Include="System.Text.Json" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>
