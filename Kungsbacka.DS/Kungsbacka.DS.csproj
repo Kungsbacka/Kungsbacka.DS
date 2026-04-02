@@ -10,18 +10,18 @@
     <Compile Remove="PasswordGenerator.example.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.DirectoryServices" Version="10.0.5" />
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.5" />
-    <PackageReference Include="System.Text.Json" Version="10.0.5" />
+  <!-- The following packages are in-boxed with PowerShell 7.5+, so we only need to reference it for netstandard2.0 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0-windows'">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.DirectoryServices" Version="9.0.0" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.0" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions\Kungsbacka.CommonExtensions.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
 
 </Project>
